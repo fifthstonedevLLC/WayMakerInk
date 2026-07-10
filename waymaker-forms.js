@@ -146,7 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         form.innerHTML =
           '<section class="wm-section"><h3>Thank you — your waiver has been submitted.</h3>' +
-          '<p>A copy has been filed with WayMaker Ink. You may close this page.</p></section>';
+          '<p>A copy has been filed with WayMaker Ink. You will be redirected to the forms home page shortly.</p>' +
+          '<p><a href="WayMaker Ink Forms.template.html">Return to the forms home page now</a></p></section>';
+
+        window.setTimeout(() => {
+          window.location.assign('WayMaker Ink Forms.template.html');
+        }, 3000);
       } catch (err) {
         console.error('[waiver] Submit failed:', err);
         alert('Sorry, something went wrong submitting your waiver. Please try again or ask your artist for help.\n\n[debug] ' + err.message);
