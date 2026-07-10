@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink Piercing Waiver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="waymaker-forms.css" />
+    <script defer src="waymaker-forms.js"></script>
+  </head>
+  <body class="wm-page">
+    <header class="wm-header">
+      <a href="WayMaker Ink Forms.template.html" class="wm-brand" aria-label="WayMaker Ink home">
+        <img src="WaymakerInk_Logo_transparent.png" alt="WayMaker Ink logo" class="wm-logo" />
+      </a>
+    </header>
+
+    <main class="wm-main">
+      <div class="wm-shell">
+        <section class="wm-intro">
+          <p class="wm-kicker">Piercing Service Consent &amp; Liability Waiver</p>
+          <h1 class="wm-title">Please review and complete this piercing waiver.</h1>
+          <p class="wm-subtitle">Provide your details, initial each acknowledgement, and sign before your appointment.</p>
+        </section>
+
+        <form class="wm-form" data-form-type="piercing-waiver">
+          <section class="wm-section">
+            <h3>Piercer</h3>
+            <div class="wm-field">
+              <label for="piercer-used">Piercer Used</label>
+              <input id="piercer-used" name="piercerUsed" placeholder="Piercer name" />
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Client Information</h3>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="pierce-first-name">First Name</label>
+                <input id="pierce-first-name" name="firstName" placeholder="First" data-firstname required />
+              </div>
+              <div class="wm-field">
+                <label for="pierce-last-name">Last Name</label>
+                <input id="pierce-last-name" name="lastName" placeholder="Last" data-lastname required />
+              </div>
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="pierce-dob">Date of Birth</label>
+                <input id="pierce-dob" name="dob" type="date" required />
+              </div>
+              <div class="wm-field">
+                <label for="pierce-age">Age</label>
+                <input id="pierce-age" name="age" type="number" min="0" placeholder="Age" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="pierce-address">Address</label>
+              <input id="pierce-address" name="address" placeholder="Street address" />
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="pierce-citystatezip">City / State / Zip</label>
+                <input id="pierce-citystatezip" name="cityStateZip" placeholder="City, State ZIP" />
+              </div>
+              <div class="wm-field">
+                <label for="pierce-phone">Phone</label>
+                <input id="pierce-phone" name="phone" type="tel" placeholder="(555) 555-0000" />
+              </div>
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Piercing Details</h3>
+            <div class="wm-field">
+              <label for="body-location">Body Location to be Pierced</label>
+              <input id="body-location" name="bodyLocation" placeholder="e.g. Left earlobe, septum, navel" />
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="jewelry-type">Type of Jewelry</label>
+                <input id="jewelry-type" name="jewelryType" placeholder="e.g. Titanium stud" />
+              </div>
+              <div class="wm-field">
+                <label for="procedure-date">Date of Procedure</label>
+                <input id="procedure-date" name="procedureDate" type="date" />
+              </div>
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Health Information / Declarations</h3>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I affirm that I am in good physical and mental health to receive this piercing and have revealed any known conditions that may affect healing (e.g., diabetes, blood disorders, immunosuppression, allergies).</div>
+            </div>
+            <div class="wm-field">
+              <label for="known-conditions">List any known conditions</label>
+              <input id="known-conditions" name="knownConditions" placeholder="Known conditions (or write None)" />
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Risks &amp; Aftercare Acknowledgement</h3>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I understand that body piercing involves permanent penetration of the skin, and complications can include (but are not limited to): bleeding, infection, scarring, allergic reactions, nerve damage, embedding of jewelry, and prolonged healing. I agree to follow all aftercare instructions provided by the piercer.</div>
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Consent &amp; Release of Liability</h3>
+            <p>By signing this document, I agree:</p>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I willingly and voluntarily consent to the piercing procedure listed above.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I release the shop, the piercer, and all personnel from liability for any adverse outcomes, injuries, infections, or complications resulting from the piercing or aftercare.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I understand that results cannot be guaranteed.</div>
+            </div>
+            <div class="wm-field">
+              <label for="client-sig-canvas">Client Signature</label>
+              <div class="wm-signature">
+                <canvas id="client-sig-canvas" class="wm-sig-canvas" aria-label="Draw client signature"></canvas>
+                <div class="wm-sig-bar">
+                  <span class="wm-sig-hint">Draw your signature above</span>
+                  <button type="button" class="wm-sig-clear">Clear</button>
+                </div>
+              </div>
+              <input type="hidden" id="client-signature" name="clientSignature" />
+            </div>
+            <div class="wm-field">
+              <label>Date</label>
+              <div class="wm-static-date" data-today></div>
+              <input type="hidden" name="clientSignDate" data-autodate />
+            </div>
+            <label class="wm-consent">
+              <input type="checkbox" name="electronicConsent" value="yes" required />
+              <span>I agree that my drawn signature and initials above are my legal electronic signature, that I am signing this document electronically, and that it is as legally binding as a handwritten signature.</span>
+            </label>
+          </section>
+
+          <section class="wm-section">
+            <h3>Minor Piercees (Under 18)</h3>
+            <p>If the client is under 18 years of age, this section MUST be completed.</p>
+            <div class="wm-field">
+              <label for="minor-age">Client's Age (must be under 18)</label>
+              <input id="minor-age" name="minorAge" type="number" min="0" max="17" placeholder="Age" />
+            </div>
+            <p>I, the undersigned parent / legal guardian, give my permission for my minor child listed above to receive the specified piercing at this shop. I also attest that I have provided accurate identification and legal authority to sign this consent.</p>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="guardian-name">Minor's Parent/Guardian Name</label>
+                <input id="guardian-name" name="guardianName" placeholder="Parent/guardian name" />
+              </div>
+              <div class="wm-field">
+                <label for="guardian-relationship">Relationship to Minor</label>
+                <input id="guardian-relationship" name="guardianRelationship" placeholder="e.g. Mother, Father, Legal guardian" />
+              </div>
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="guardian-phone">Parent/Guardian Phone</label>
+                <input id="guardian-phone" name="guardianPhone" type="tel" placeholder="(555) 555-0000" />
+              </div>
+              <div class="wm-field">
+                <label for="guardian-email">Parent/Guardian Email</label>
+                <input id="guardian-email" name="guardianEmail" type="email" placeholder="your@email.com" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="guardian-address">Parent/Guardian Address (if different)</label>
+              <input id="guardian-address" name="guardianAddress" placeholder="Street, City, State, ZIP" />
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I understand the risks associated with body piercing, and I consent to the procedure being performed on my minor child. I agree to the aftercare instructions and will supervise the minor's healing process.</div>
+            </div>
+            <div class="wm-field">
+              <label for="guardian-sig-canvas">Parent/Guardian Signature</label>
+              <div class="wm-signature">
+                <canvas id="guardian-sig-canvas" class="wm-sig-canvas" aria-label="Draw parent or guardian signature"></canvas>
+                <div class="wm-sig-bar">
+                  <span class="wm-sig-hint">Draw signature above</span>
+                  <button type="button" class="wm-sig-clear">Clear</button>
+                </div>
+              </div>
+              <input type="hidden" id="guardian-signature" name="guardianSignature" />
+            </div>
+            <div class="wm-field">
+              <label>Date</label>
+              <div class="wm-static-date" data-today></div>
+              <input type="hidden" name="guardianSignDate" data-autodate />
+            </div>
+            <label class="wm-consent">
+              <input type="checkbox" name="guardianElectronicConsent" value="yes" />
+              <span>As the parent/legal guardian, I agree that my drawn signature above is my legal electronic signature, that I am signing this document electronically, and that it is as legally binding as a handwritten signature.</span>
+            </label>
+          </section>
+
+          <section class="wm-section">
+            <div class="wm-actions">
+              <button class="wm-button" type="submit">Submit Waiver</button>
+              <a href="WayMaker Ink Waiver (Online).template.html">Need the tattoo form instead?</a>
+            </div>
+          </section>
+        </form>
+      </div>
+    </main>
+
+    <footer class="wm-footer">
+      <span>© 2026 WayMaker Ink LLC</span>
+      <span>“I am the way, the truth, and the life.” — John 14:6</span>
+    </footer>
+  </body>
+</html>

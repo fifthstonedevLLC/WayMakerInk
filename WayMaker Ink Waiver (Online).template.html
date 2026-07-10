@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink Tattoo Waiver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="waymaker-forms.css" />
+    <script defer src="waymaker-forms.js"></script>
+  </head>
+  <body class="wm-page">
+    <header class="wm-header">
+      <a href="WayMaker Ink Forms.template.html" class="wm-brand" aria-label="WayMaker Ink home">
+        <img src="WaymakerInk_Logo_transparent.png" alt="WayMaker Ink logo" class="wm-logo" />
+      </a>
+    </header>
+
+    <main class="wm-main">
+      <div class="wm-shell">
+        <section class="wm-intro">
+          <p class="wm-kicker">Waiver, Release &amp; Consent to Tattoo</p>
+          <h1 class="wm-title">Please read and be certain you understand the implications of signing this document.</h1>
+          <p class="wm-subtitle">Initial each provision after reading it to show that you understand each provision, complete your information, and submit when finished.</p>
+        </section>
+
+        <form class="wm-form" data-form-type="tattoo-waiver">
+          <section class="wm-section">
+            <h3>Artist</h3>
+            <div class="wm-field">
+              <label for="artist-used">Artist Used</label>
+              <input id="artist-used" name="artistUsed" placeholder="Artist name" />
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>Your Information</h3>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="first-name">First Name</label>
+                <input id="first-name" name="firstName" placeholder="First" data-firstname required />
+              </div>
+              <div class="wm-field">
+                <label for="last-name">Last Name</label>
+                <input id="last-name" name="lastName" placeholder="Last" data-lastname required />
+              </div>
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="dob">Date of Birth</label>
+                <input id="dob" name="dob" type="date" required />
+              </div>
+              <div class="wm-field">
+                <label for="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" />
+              </div>
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="your@email.com" />
+              </div>
+              <div class="wm-field">
+                <label for="license">Driver's License / I.D. #</label>
+                <input id="license" name="license" placeholder="License or I.D. number" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="address">Address</label>
+              <input id="address" name="address" placeholder="Street, City, State, ZIP" />
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>The Agreement</h3>
+            <p>In consideration of receiving a tattoo from an artist at WayMaker Ink (together with its employees, apprentices and guest tattoo artists, the &ldquo;Tattoo Studio&rdquo;), I agree to the following.</p>
+            <div class="wm-field">
+              <label>That I, (Clearly PRINT your name)</label>
+              <div class="wm-static-name" data-fullname>—</div>
+              <input type="hidden" name="printNameAgreement" data-fullname />
+            </div>
+            <p>have been fully informed of the inherent risks associated with getting a tattoo. I fully understand that these risks, known and unknown, can lead to injury, including but not limited to infection, scarring, difficulties in detecting melanoma and allergic reactions to tattoo pigment, latex gloves, and/or soap. Having been informed of the potential risks associated with getting a tattoo, I still wish to proceed with the tattoo application and I freely accept and expressly assume any and all risks that may arise from tattooing.</p>
+          </section>
+
+          <section class="wm-section">
+            <h3>Initial Each Provision</h3>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>TO WAIVE AND RELEASE to the fullest extent permitted by law each of the Artist and the Tattoo Studio from all liability whatsoever, for any and all claims or causes of action that I, my estate, heirs, executors or assignees may have for any personal injury or otherwise, including any direct and/or consequential damages, which result or arise from the application of my tattoo, whether caused by the negligence or fault of either the Artist or that Tattoo Studio, or otherwise.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>That both the Artist and the Tattoo Studio have given me the full opportunity to ask any and all questions about the application of my tattoo and all my questions have been answered to my total satisfaction.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>The Artist and the Tattoo Studio have given me instructions on the care of my tattoo while it&rsquo;s healing, and I understand them and will follow them. I acknowledge that it is possible that the tattoo can become infected, particularly if I do not follow the instructions given to me. If any touch-up work to the tattoo is needed due to my own negligence, I agree that the work will be done at my own expense.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I am NOT under the influence of alcohol or drugs, and I am voluntarily submitting to be tattooed by the Artist without duress or coercion.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I do NOT have diabetes, epilepsy, hemophilia, a heart condition, nor do I take blood thinning medication.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I do NOT have any other medical or skin condition that may interfere with the application or healing of the tattoo. I am NOT the recipient of an organ or bone marrow transplant or, if I am, I have taken the prescribed preventive regimen of antibiotics that is required by my doctor in advance of any invasive procedure such as tattooing or piercing. I am NOT pregnant or nursing. I do NOT have a mental impairment that may affect my judgment in getting the tattoo.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>Neither the Artist nor that Tattoo Studio is responsible for the meaning or spelling of the symbol or text that I have provided to them or chosen from the flash (design) sheets. Variations in color and design may exist between the tattoo art I have selected and the actual tattoo when it is applied to my body. I also understand that over time, the colors and the clarity of my tattoo will fade due to unprotected exposure to the sun and the naturally occurring dispersion of pigment under the skin. A tattoo is a permanent change to my appearance and can only be removed by laser or surgical means, which can be disfiguring and/or costly and which likely will not result in the restoration of my skin to its exact appearance before being tattooed.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I release all rights to any photographs and video taken of me and the tattoo and give consent in advance to their reproduction in print or electronic form. (If you do NOT initial this provision, please advise and remind your Artist and the Tattoo Studio NOT to take any pictures or video of you and your completed tattoo).</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I agree to reimburse each of the Artists and the Tattoo Studio for any attorney&rsquo;s fees and costs incurred in any legal action I bring against either the Artist or the Tattoo Studio and in which either the Artist or the Tattoo Studio is the prevailing party. I agree that the courts of Iowa in Grundy County shall have personal jurisdiction and venue over me and shall have exclusive jurisdiction for the purpose of litigating any dispute arising out of or related to this agreement.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I acknowledge that I have been given adequate opportunity to read and understand this document, that it was NOT presented to me at the last minute, and I understand that I am signing a legal contract waiving certain rights to recover against the Artist and the Tattoo Studio.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>If any provision, section, subsection, clause or phrase of this release is found to be unenforceable or invalid, that portion shall be severed from this contract. The remainder of this contract will then be construed as though the unenforceable portion had never been contained in this document.</div>
+            </div>
+            <div class="wm-provision">
+              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
+              <div>I hereby declare that I am of legal age (18), have provided valid proof of age, and am competent to sign this agreement.</div>
+            </div>
+          </section>
+
+          <section class="wm-section">
+            <h3>I have read this agreement, I understand it, I agree to be bound by it.</h3>
+            <div class="wm-field">
+              <label for="sig-canvas">Signature</label>
+              <div class="wm-signature">
+                <canvas id="sig-canvas" class="wm-sig-canvas" aria-label="Draw your signature"></canvas>
+                <div class="wm-sig-bar">
+                  <span class="wm-sig-hint">Draw your signature above</span>
+                  <button type="button" class="wm-sig-clear">Clear</button>
+                </div>
+              </div>
+              <input type="hidden" id="signature" name="signature" />
+            </div>
+            <div class="wm-field">
+              <label>Date</label>
+              <div class="wm-static-date" data-today></div>
+              <input type="hidden" name="signDate" data-autodate />
+            </div>
+            <label class="wm-consent">
+              <input type="checkbox" name="electronicConsent" value="yes" required />
+              <span>I agree that my drawn signature and initials above are my legal electronic signature, that I am signing this document electronically, and that it is as legally binding as a handwritten signature.</span>
+            </label>
+            <div class="wm-actions">
+              <button class="wm-button" type="submit">Submit Waiver</button>
+              <a href="WayMaker Ink Piercing Waiver (Online).template.html">Need the piercing form instead?</a>
+            </div>
+          </section>
+        </form>
+      </div>
+    </main>
+
+    <footer class="wm-footer">
+      <span>© 2026 WayMaker Ink LLC</span>
+      <span>“I am the way, the truth, and the life.” — John 14:6</span>
+    </footer>
+  </body>
+</html>
