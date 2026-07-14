@@ -321,6 +321,45 @@ button, input, textarea, select { font: inherit; }
   .wm-header, .wm-footer { padding-left: 18px; padding-right: 18px; }
 }
 
+/* Required-field indicator */
+.wm-req {
+  color: var(--accent);
+  margin-left: 4px;
+  font-weight: 700;
+}
+.wm-reqnote {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 14px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.wm-reqnote .wm-req { margin: 0 5px 0 0; }
+
+/* Signature-style initials inside the provision toggle */
+.wm-toggle {
+  min-width: 48px;
+  height: 34px;
+  overflow: visible;
+}
+.wm-toggle-mark {
+  font-family: 'Dancing Script', 'Segoe Script', 'Brush Script MT', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: inherit;
+}
+.wm-toggle.is-checked .wm-toggle-mark { color: #080808; }
+
+/* Highlight provisions the client still needs to initial on submit */
+.wm-toggle.is-missing {
+  border-color: #c65b43;
+  box-shadow: 0 0 0 1px #c65b43;
+}
+
+/* Conditional sections (e.g. minor consent) stay hidden until toggled on */
+[hidden] { display: none !important; }
+
 /* Square edges — no rounded corners anywhere. */
 .wm-card,
 .wm-section,

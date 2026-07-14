@@ -6,7 +6,7 @@
     <title>WayMaker Ink Piercing Waiver</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="waymaker-forms.css" />
     <script defer src="waymaker-forms.js"></script>
   </head>
@@ -23,14 +23,32 @@
           <p class="wm-kicker">Piercing Service Consent &amp; Liability Waiver</p>
           <h1 class="wm-title">Please review and complete this piercing waiver.</h1>
           <p class="wm-subtitle">Provide your details, initial each acknowledgement, and sign before your appointment.</p>
+          <p class="wm-reqnote"><span class="wm-req">*</span> Indicates a required field. All other fields are optional.</p>
         </section>
 
         <form class="wm-form" data-form-type="piercing-waiver">
           <section class="wm-section">
+            <h3>Age Verification</h3>
+            <div class="wm-field">
+              <label for="is-minor">Is the client under 18 years of age? <span class="wm-req">*</span></label>
+              <select id="is-minor" name="isMinor" data-minor-toggle required>
+                <option value="" disabled selected>Select…</option>
+                <option value="no">No — 18 or older</option>
+                <option value="yes">Yes — under 18</option>
+              </select>
+              <p class="wm-reqnote">If the client is under 18, an additional parent/guardian consent section will appear below and must be completed.</p>
+            </div>
+          </section>
+
+          <section class="wm-section">
             <h3>Piercer</h3>
             <div class="wm-field">
               <label for="piercer-used">Piercer Used</label>
-              <input id="piercer-used" name="piercerUsed" placeholder="Piercer name" />
+              <select id="piercer-used" name="piercerUsed">
+                <option value="" disabled selected>Select a piercer…</option>
+                <option value="Nic Sinnwell">Nic Sinnwell</option>
+                <option value="Laynie Flugum">Laynie Flugum</option>
+              </select>
             </div>
           </section>
 
@@ -38,32 +56,36 @@
             <h3>Client Information</h3>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="pierce-first-name">First Name</label>
+                <label for="pierce-first-name">First Name <span class="wm-req">*</span></label>
                 <input id="pierce-first-name" name="firstName" placeholder="First" data-firstname required />
               </div>
               <div class="wm-field">
-                <label for="pierce-last-name">Last Name</label>
+                <label for="pierce-last-name">Last Name <span class="wm-req">*</span></label>
                 <input id="pierce-last-name" name="lastName" placeholder="Last" data-lastname required />
               </div>
             </div>
-            <div class="wm-input-row">
-              <div class="wm-field">
-                <label for="pierce-dob">Date of Birth</label>
-                <input id="pierce-dob" name="dob" type="date" required />
-              </div>
-              <div class="wm-field">
-                <label for="pierce-age">Age</label>
-                <input id="pierce-age" name="age" type="number" min="0" placeholder="Age" />
-              </div>
+            <div class="wm-field">
+              <label for="pierce-dob">Date of Birth <span class="wm-req">*</span></label>
+              <input id="pierce-dob" name="dob" type="date" required />
             </div>
             <div class="wm-field">
-              <label for="pierce-address">Address</label>
-              <input id="pierce-address" name="address" placeholder="Street address" />
+              <label for="pierce-address">Street Address <span class="wm-req">*</span></label>
+              <input id="pierce-address" name="address" placeholder="Street address" autocomplete="address-line1" required />
             </div>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="pierce-citystatezip">City / State / Zip</label>
-                <input id="pierce-citystatezip" name="cityStateZip" placeholder="City, State ZIP" />
+                <label for="pierce-city">City <span class="wm-req">*</span></label>
+                <input id="pierce-city" name="city" placeholder="City" autocomplete="address-level2" required />
+              </div>
+              <div class="wm-field">
+                <label for="pierce-state">State <span class="wm-req">*</span></label>
+                <input id="pierce-state" name="state" placeholder="State" autocomplete="address-level1" required />
+              </div>
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="pierce-zip">Zip Code <span class="wm-req">*</span></label>
+                <input id="pierce-zip" name="zip" placeholder="ZIP" inputmode="numeric" autocomplete="postal-code" required />
               </div>
               <div class="wm-field">
                 <label for="pierce-phone">Phone</label>
@@ -126,7 +148,7 @@
               <div>I understand that results cannot be guaranteed.</div>
             </div>
             <div class="wm-field">
-              <label for="client-sig-canvas">Client Signature</label>
+              <label for="client-sig-canvas">Client Signature <span class="wm-req">*</span></label>
               <div class="wm-signature">
                 <canvas id="client-sig-canvas" class="wm-sig-canvas" aria-label="Draw client signature"></canvas>
                 <div class="wm-sig-bar">
@@ -147,22 +169,22 @@
             </label>
           </section>
 
-          <section class="wm-section">
+          <section class="wm-section" data-minor-section hidden>
             <h3>Minor Piercees (Under 18)</h3>
-            <p>If the client is under 18 years of age, this section MUST be completed.</p>
+            <p>Because the client is under 18 years of age, this section MUST be completed by a parent or legal guardian.</p>
             <div class="wm-field">
-              <label for="minor-age">Client's Age (must be under 18)</label>
-              <input id="minor-age" name="minorAge" type="number" min="0" max="17" placeholder="Age" />
+              <label for="minor-age">Client's Age (must be under 18) <span class="wm-req">*</span></label>
+              <input id="minor-age" name="minorAge" type="number" min="0" max="17" placeholder="Age" data-req-when-minor />
             </div>
             <p>I, the undersigned parent / legal guardian, give my permission for my minor child listed above to receive the specified piercing at this shop. I also attest that I have provided accurate identification and legal authority to sign this consent.</p>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="guardian-name">Minor's Parent/Guardian Name</label>
-                <input id="guardian-name" name="guardianName" placeholder="Parent/guardian name" />
+                <label for="guardian-name">Minor's Parent/Guardian Name <span class="wm-req">*</span></label>
+                <input id="guardian-name" name="guardianName" placeholder="Parent/guardian name" data-req-when-minor />
               </div>
               <div class="wm-field">
-                <label for="guardian-relationship">Relationship to Minor</label>
-                <input id="guardian-relationship" name="guardianRelationship" placeholder="e.g. Mother, Father, Legal guardian" />
+                <label for="guardian-relationship">Relationship to Minor <span class="wm-req">*</span></label>
+                <input id="guardian-relationship" name="guardianRelationship" placeholder="e.g. Mother, Father, Legal guardian" data-req-when-minor />
               </div>
             </div>
             <div class="wm-input-row">
@@ -176,15 +198,29 @@
               </div>
             </div>
             <div class="wm-field">
-              <label for="guardian-address">Parent/Guardian Address (if different)</label>
-              <input id="guardian-address" name="guardianAddress" placeholder="Street, City, State, ZIP" />
+              <label for="guardian-address">Parent/Guardian Street Address (if different)</label>
+              <input id="guardian-address" name="guardianAddress" placeholder="Street address" autocomplete="address-line1" />
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="guardian-city">City</label>
+                <input id="guardian-city" name="guardianCity" placeholder="City" autocomplete="address-level2" />
+              </div>
+              <div class="wm-field">
+                <label for="guardian-state">State</label>
+                <input id="guardian-state" name="guardianState" placeholder="State" autocomplete="address-level1" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="guardian-zip">Zip Code</label>
+              <input id="guardian-zip" name="guardianZip" placeholder="ZIP" inputmode="numeric" autocomplete="postal-code" />
             </div>
             <div class="wm-provision">
               <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
               <div>I understand the risks associated with body piercing, and I consent to the procedure being performed on my minor child. I agree to the aftercare instructions and will supervise the minor's healing process.</div>
             </div>
             <div class="wm-field">
-              <label for="guardian-sig-canvas">Parent/Guardian Signature</label>
+              <label for="guardian-sig-canvas">Parent/Guardian Signature <span class="wm-req">*</span></label>
               <div class="wm-signature">
                 <canvas id="guardian-sig-canvas" class="wm-sig-canvas" aria-label="Draw parent or guardian signature"></canvas>
                 <div class="wm-sig-bar">

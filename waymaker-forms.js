@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const l = (lastEl && lastEl.value.trim()) || '';
     return (f ? f[0].toUpperCase() : '') + (l ? l[0].toUpperCase() : '');
   };
+  // The mark shown inside an initialed provision: real initials once the name
+  // is entered, otherwise a checkmark so the selection is always visible.
+  const getMark = () => getInitials() || '✓';
   const getFullName = () => {
     const f = (firstEl && firstEl.value.trim()) || '';
     const l = (lastEl && lastEl.value.trim()) || '';
@@ -27,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Keep any already-initialed provisions in sync with the current initials.
     document.querySelectorAll('.wm-toggle.is-checked .wm-toggle-mark').forEach((mark) => {
-      mark.textContent = initials;
+      mark.textContent = initials || '✓';
     });
   };
   if (firstEl) firstEl.addEventListener('input', refreshNames);
@@ -36,9 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.wm-toggle').forEach((toggle) => {
     toggle.addEventListener('click', () => {
       toggle.classList.toggle('is-checked');
+      toggle.classList.remove('is-missing');
       const mark = toggle.querySelector('.wm-toggle-mark');
       if (mark) {
-        mark.textContent = toggle.classList.contains('is-checked') ? getInitials() : '';
+        mark.textContent = toggle.classList.contains('is-checked') ? getMark() : '';
       }
     });
   });
@@ -68,6 +72,26 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-today]').forEach((el) => {
     el.textContent = pretty;
   });
+
+  // ---- Under-18 / minor consent toggle --------------------------------------
+  // The piercing form asks up front whether the client is under 18. The minor
+  // consent section stays hidden (and its fields inert) until "Yes" is chosen.
+  const minorToggle = document.querySelector('[data-minor-toggle]');
+  const minorSection = document.querySelector('[data-minor-section]');
+  const syncMinorSection = () => {
+    if (!minorSection) return;
+    const show = minorToggle && minorToggle.value === 'yes';
+    minorSection.hidden = !show;
+    // Keep required fields from blocking submit while the section is hidden.
+    minorSection.querySelectorAll('[data-req-when-minor]').forEach((el) => {
+      if (show) el.setAttribute('required', '');
+      else el.removeAttribute('required');
+    });
+  };
+  if (minorToggle) {
+    minorToggle.addEventListener('change', syncMinorSection);
+    syncMinorSection();
+  }
 
   // Draw-to-sign signature pads.
   document.querySelectorAll('.wm-signature').forEach(setupSignaturePad);
@@ -107,21 +131,46 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data.firstName?.trim()) missing.push('First Name');
       if (!data.lastName?.trim()) missing.push('Last Name');
       if (!data.dob?.trim()) missing.push('Date of Birth');
+      if (!data.address?.trim()) missing.push('Address');
+      if (!data.city?.trim()) missing.push('City');
+      if (!data.state?.trim()) missing.push('State');
+      if (!data.zip?.trim()) missing.push('Zip');
       // Tattoo form uses `signature`; piercing form uses `clientSignature`.
       const signature = data.signature || data.clientSignature;
       if (!signature?.trim()) missing.push('Signature');
       if (!data.electronicConsent) missing.push('Electronic signature consent');
-      // Guardian consent is only required when the minor section was used.
+      // Guardian consent is required when the client is under 18, or whenever
+      // any part of the minor section was filled in.
+      const isMinor = data.isMinor === 'yes';
       const guardianUsed = !!(
+        isMinor ||
         data.guardianName?.trim() ||
         data.guardianSignature?.trim() ||
         data.minorAge?.trim()
       );
+      if (isMinor) {
+        if (!data.guardianName?.trim()) missing.push("Parent/Guardian Name");
+        if (!data.guardianSignature?.trim()) missing.push('Parent/Guardian Signature');
+      }
       if (guardianUsed && !data.guardianElectronicConsent) {
         missing.push('Parent/Guardian electronic signature consent');
       }
+
+      // Every provision the client can see must be initialed. Provisions inside
+      // a hidden section (e.g. the minor block when the client is 18+) are skipped.
+      const visibleProvisions = Array.from(document.querySelectorAll('.wm-provision'))
+        .filter((row) => !row.closest('[hidden]'));
+      const uninitialed = visibleProvisions.filter((row) => !row.querySelector('.wm-toggle.is-checked'));
+      document.querySelectorAll('.wm-toggle.is-missing').forEach((t) => t.classList.remove('is-missing'));
+      if (uninitialed.length) {
+        uninitialed.forEach((row) => row.querySelector('.wm-toggle')?.classList.add('is-missing'));
+        missing.push('Initials on all provisions (' + uninitialed.length + ' still not initialed)');
+      }
+
       if (missing.length) {
         alert('Please complete: ' + missing.join(', '));
+        // Bring the first outstanding provision into view.
+        if (uninitialed.length) uninitialed[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 

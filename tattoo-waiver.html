@@ -6,7 +6,7 @@
     <title>WayMaker Ink Tattoo Waiver</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="waymaker-forms.css" />
     <script defer src="waymaker-forms.js"></script>
   </head>
@@ -23,6 +23,7 @@
           <p class="wm-kicker">Waiver, Release &amp; Consent to Tattoo</p>
           <h1 class="wm-title">Please read and be certain you understand the implications of signing this document.</h1>
           <p class="wm-subtitle">Initial each provision after reading it to show that you understand each provision, complete your information, and submit when finished.</p>
+          <p class="wm-reqnote"><span class="wm-req">*</span> Indicates a required field. All other fields are optional.</p>
         </section>
 
         <form class="wm-form" data-form-type="tattoo-waiver">
@@ -30,7 +31,11 @@
             <h3>Artist</h3>
             <div class="wm-field">
               <label for="artist-used">Artist Used</label>
-              <input id="artist-used" name="artistUsed" placeholder="Artist name" />
+              <select id="artist-used" name="artistUsed">
+                <option value="" disabled selected>Select an artist…</option>
+                <option value="Nic Sinnwell">Nic Sinnwell</option>
+                <option value="Laynie Flugum">Laynie Flugum</option>
+              </select>
             </div>
           </section>
 
@@ -38,17 +43,17 @@
             <h3>Your Information</h3>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="first-name">First Name</label>
+                <label for="first-name">First Name <span class="wm-req">*</span></label>
                 <input id="first-name" name="firstName" placeholder="First" data-firstname required />
               </div>
               <div class="wm-field">
-                <label for="last-name">Last Name</label>
+                <label for="last-name">Last Name <span class="wm-req">*</span></label>
                 <input id="last-name" name="lastName" placeholder="Last" data-lastname required />
               </div>
             </div>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="dob">Date of Birth</label>
+                <label for="dob">Date of Birth <span class="wm-req">*</span></label>
                 <input id="dob" name="dob" type="date" required />
               </div>
               <div class="wm-field">
@@ -67,8 +72,22 @@
               </div>
             </div>
             <div class="wm-field">
-              <label for="address">Address</label>
-              <input id="address" name="address" placeholder="Street, City, State, ZIP" />
+              <label for="address">Street Address <span class="wm-req">*</span></label>
+              <input id="address" name="address" placeholder="Street address" autocomplete="address-line1" required />
+            </div>
+            <div class="wm-input-row">
+              <div class="wm-field">
+                <label for="city">City <span class="wm-req">*</span></label>
+                <input id="city" name="city" placeholder="City" autocomplete="address-level2" required />
+              </div>
+              <div class="wm-field">
+                <label for="state">State <span class="wm-req">*</span></label>
+                <input id="state" name="state" placeholder="State" autocomplete="address-level1" required />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="zip">Zip Code <span class="wm-req">*</span></label>
+              <input id="zip" name="zip" placeholder="ZIP" inputmode="numeric" autocomplete="postal-code" required />
             </div>
           </section>
 
@@ -138,7 +157,7 @@
           <section class="wm-section">
             <h3>I have read this agreement, I understand it, I agree to be bound by it.</h3>
             <div class="wm-field">
-              <label for="sig-canvas">Signature</label>
+              <label for="sig-canvas">Signature <span class="wm-req">*</span></label>
               <div class="wm-signature">
                 <canvas id="sig-canvas" class="wm-sig-canvas" aria-label="Draw your signature"></canvas>
                 <div class="wm-sig-bar">
