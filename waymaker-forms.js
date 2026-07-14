@@ -87,6 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (show) el.setAttribute('required', '');
       else el.removeAttribute('required');
     });
+    // The guardian signature canvas is sized from its rendered dimensions.
+    // While the section was hidden that measured 0×0, so re-fit the pads now
+    // that it's visible — otherwise the canvas can't be drawn on.
+    if (show) window.dispatchEvent(new Event('resize'));
   };
   if (minorToggle) {
     minorToggle.addEventListener('change', syncMinorSection);
