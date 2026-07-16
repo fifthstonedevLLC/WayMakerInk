@@ -30,7 +30,11 @@
             <h3>Artist</h3>
             <div class="wm-field">
               <label for="artist-used">Artist Used</label>
-              <input id="artist-used" name="artistUsed" placeholder="Artist name" />
+              <select id="artist-used" name="artistUsed" required>
+                <option value="" disabled selected>Select an artist</option>
+                <option value="Nic Sinnwell">Nic Sinnwell</option>
+                <option value="Laynie Flugum">Laynie Flugum</option>
+              </select>
             </div>
           </section>
 
@@ -52,23 +56,52 @@
                 <input id="dob" name="dob" type="date" required />
               </div>
               <div class="wm-field">
-                <label for="phone">Phone</label>
-                <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" />
+                <label for="tattoo-age">Age</label>
+                <input id="tattoo-age" name="age" type="number" min="0" placeholder="Auto-calculated from date of birth" data-age readonly />
               </div>
             </div>
+            <p class="wm-minor-block" data-minor-block hidden>Tattoo services are available to clients 18 and older only. Based on the date of birth entered, this client is under 18 and cannot proceed.</p>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" placeholder="your@email.com" />
+                <label for="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" />
               </div>
               <div class="wm-field">
-                <label for="license">Driver's License / I.D. #</label>
-                <input id="license" name="license" placeholder="License or I.D. number" />
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="your@email.com" autocomplete="email" />
               </div>
             </div>
             <div class="wm-field">
+              <label for="license">Driver's License / I.D. #</label>
+              <input id="license" name="license" placeholder="License or I.D. number" />
+            </div>
+            <div class="wm-field">
               <label for="address">Address</label>
-              <input id="address" name="address" placeholder="Street, City, State, ZIP" />
+              <input id="address" name="address" placeholder="Street address" autocomplete="address-line1" />
+            </div>
+            <div class="wm-input-row wm-address-row">
+              <div class="wm-field">
+                <label for="city">City</label>
+                <input id="city" name="city" placeholder="City" autocomplete="address-level2" />
+              </div>
+              <div class="wm-field">
+                <label for="state">State</label>
+                <input id="state" name="state" placeholder="State" autocomplete="address-level1" />
+              </div>
+              <div class="wm-field">
+                <label for="zip">ZIP</label>
+                <input id="zip" name="zip" placeholder="ZIP" autocomplete="postal-code" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="tattoo-license-photo">Photo of Driver's License / ID <span class="wm-req">(required)</span></label>
+              <div class="wm-license">
+                <input type="file" id="tattoo-license-photo" class="wm-license-input" accept="image/*" capture="environment" required />
+                <label class="wm-license-btn" for="tattoo-license-photo">Take Photo</label>
+                <img class="wm-license-preview" alt="Driver's license preview" hidden />
+                <p class="wm-license-hint">Take a clear photo of your government-issued photo ID.</p>
+              </div>
+              <input type="hidden" name="licenseImage" />
             </div>
           </section>
 
