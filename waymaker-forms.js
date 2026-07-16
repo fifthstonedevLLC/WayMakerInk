@@ -149,7 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Guardian section follows the stated status (piercing form).
     if (minorSelect) setMinorVisible(minorSelect.value === 'minor');
     // Under-18 block notice (tattoo form).
-    if (minorBlock) minorBlock.hidden = !(age != null && age < 18);
+    const isBlockedMinor = age != null && age < 18;
+    if (minorBlock) {
+      minorBlock.hidden = !isBlockedMinor;
+      // Disable submitting while the under-18 block notice is showing.
+      // Query the DOM here rather than the `submitBtn` const below, which is
+      // still in its temporal dead zone during the initial refreshAgeState().
+      const submitButton = document.querySelector('.wm-form button[type="submit"]');
+      if (submitButton) submitButton.disabled = isBlockedMinor;
+    }
     // Stop message when the stated status and the DOB disagree.
     if (ageMismatch) ageMismatch.hidden = !statusConflictsWithDob();
   };
