@@ -27,10 +27,27 @@
 
         <form class="wm-form" data-form-type="piercing-waiver">
           <section class="wm-section">
+            <h3>Age Verification</h3>
+            <div class="wm-field">
+              <label for="is-minor">Is the person receiving the piercing 18 years of age or older?</label>
+              <select id="is-minor" name="ageStatus" data-minor-select required>
+                <option value="" disabled selected>Select one</option>
+                <option value="adult">Yes — 18 or older</option>
+                <option value="minor">No — under 18</option>
+              </select>
+            </div>
+            <p class="wm-minor-block" data-age-mismatch hidden>The answer above doesn't match the date of birth entered below. Please correct the age question or the date of birth — they must agree before you can submit.</p>
+          </section>
+
+          <section class="wm-section">
             <h3>Piercer</h3>
             <div class="wm-field">
               <label for="piercer-used">Piercer Used</label>
-              <input id="piercer-used" name="piercerUsed" placeholder="Piercer name" />
+              <select id="piercer-used" name="piercerUsed" required>
+                <option value="" disabled selected>Select a piercer</option>
+                <option value="Nic Sinnwell">Nic Sinnwell</option>
+                <option value="Laynie Flugum">Laynie Flugum</option>
+              </select>
             </div>
           </section>
 
@@ -53,21 +70,43 @@
               </div>
               <div class="wm-field">
                 <label for="pierce-age">Age</label>
-                <input id="pierce-age" name="age" type="number" min="0" placeholder="Age" />
+                <input id="pierce-age" name="age" type="number" min="0" placeholder="Auto-calculated from date of birth" data-age readonly />
               </div>
             </div>
             <div class="wm-field">
               <label for="pierce-address">Address</label>
-              <input id="pierce-address" name="address" placeholder="Street address" />
+              <input id="pierce-address" name="address" placeholder="Street address" autocomplete="address-line1" />
             </div>
-            <div class="wm-input-row">
+            <div class="wm-input-row wm-address-row">
               <div class="wm-field">
-                <label for="pierce-citystatezip">City / State / Zip</label>
-                <input id="pierce-citystatezip" name="cityStateZip" placeholder="City, State ZIP" />
+                <label for="pierce-city">City</label>
+                <input id="pierce-city" name="city" placeholder="City" autocomplete="address-level2" />
               </div>
               <div class="wm-field">
-                <label for="pierce-phone">Phone</label>
-                <input id="pierce-phone" name="phone" type="tel" placeholder="(555) 555-0000" />
+                <label for="pierce-state">State</label>
+                <input id="pierce-state" name="state" placeholder="State" autocomplete="address-level1" />
+              </div>
+              <div class="wm-field">
+                <label for="pierce-zip">ZIP</label>
+                <input id="pierce-zip" name="zip" placeholder="ZIP" autocomplete="postal-code" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="wm-field">
+              <label for="pierce-phone">Phone</label>
+              <input id="pierce-phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" />
+            </div>
+            <!-- The license upload lives here for adults; for minors the JS
+                 moves this same field into the guardian section below. -->
+            <div data-license-slot="client">
+              <div class="wm-field" data-license-field>
+                <label for="pierce-license-photo">Photo of Driver's License / ID <span class="wm-req">(required)</span></label>
+                <div class="wm-license">
+                  <input type="file" id="pierce-license-photo" class="wm-license-input" accept="image/*" capture="environment" required />
+                  <label class="wm-license-btn" for="pierce-license-photo">Take Photo</label>
+                  <img class="wm-license-preview" alt="Driver's license preview" hidden />
+                  <p class="wm-license-hint">Take a clear photo of your government-issued photo ID.</p>
+                </div>
+                <input type="hidden" name="licenseImage" />
               </div>
             </div>
           </section>
@@ -85,7 +124,7 @@
               </div>
               <div class="wm-field">
                 <label for="procedure-date">Date of Procedure</label>
-                <input id="procedure-date" name="procedureDate" type="date" />
+                <input id="procedure-date" name="procedureDate" type="date" data-defaulttoday />
               </div>
             </div>
           </section>
@@ -134,12 +173,12 @@
                   <button type="button" class="wm-sig-clear">Clear</button>
                 </div>
               </div>
-              <input type="hidden" id="client-signature" name="clientSignature" />
+              <input type="hidden" id="client-signature" name="signature" />
             </div>
             <div class="wm-field">
               <label>Date</label>
               <div class="wm-static-date" data-today></div>
-              <input type="hidden" name="clientSignDate" data-autodate />
+              <input type="hidden" name="signDate" data-autodate />
             </div>
             <label class="wm-consent">
               <input type="checkbox" name="electronicConsent" value="yes" required />
@@ -147,13 +186,9 @@
             </label>
           </section>
 
-          <section class="wm-section">
+          <section class="wm-section" data-minor-section hidden>
             <h3>Minor Piercees (Under 18)</h3>
-            <p>If the client is under 18 years of age, this section MUST be completed.</p>
-            <div class="wm-field">
-              <label for="minor-age">Client's Age (must be under 18)</label>
-              <input id="minor-age" name="minorAge" type="number" min="0" max="17" placeholder="Age" />
-            </div>
+            <p>Because the client is under 18 years of age, this section MUST be completed by a parent or legal guardian.</p>
             <p>I, the undersigned parent / legal guardian, give my permission for my minor child listed above to receive the specified piercing at this shop. I also attest that I have provided accurate identification and legal authority to sign this consent.</p>
             <div class="wm-input-row">
               <div class="wm-field">
@@ -176,9 +211,26 @@
               </div>
             </div>
             <div class="wm-field">
-              <label for="guardian-address">Parent/Guardian Address (if different)</label>
-              <input id="guardian-address" name="guardianAddress" placeholder="Street, City, State, ZIP" />
+              <label for="guardian-address">Parent/Guardian Street Address (if different)</label>
+              <input id="guardian-address" name="guardianAddress" placeholder="Street address" autocomplete="section-guardian address-line1" />
             </div>
+            <div class="wm-input-row wm-address-row">
+              <div class="wm-field">
+                <label for="guardian-city">City</label>
+                <input id="guardian-city" name="guardianCity" placeholder="City" autocomplete="section-guardian address-level2" />
+              </div>
+              <div class="wm-field">
+                <label for="guardian-state">State</label>
+                <input id="guardian-state" name="guardianState" placeholder="State" autocomplete="section-guardian address-level1" />
+              </div>
+              <div class="wm-field">
+                <label for="guardian-zip">ZIP</label>
+                <input id="guardian-zip" name="guardianZip" placeholder="ZIP" autocomplete="section-guardian postal-code" inputmode="numeric" />
+              </div>
+            </div>
+            <!-- For minors, the JS relocates the Driver's License / ID upload
+                 here (out of the client section) so the guardian's ID is on file. -->
+            <div data-license-slot="guardian"></div>
             <div class="wm-provision">
               <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
               <div>I understand the risks associated with body piercing, and I consent to the procedure being performed on my minor child. I agree to the aftercare instructions and will supervise the minor's healing process.</div>

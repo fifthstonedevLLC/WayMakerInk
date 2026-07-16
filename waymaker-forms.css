@@ -174,10 +174,33 @@ button, input, textarea, select { font: inherit; }
   outline: none;
   border-color: var(--accent);
 }
+/* Calculated, non-editable fields (e.g. Age from date of birth). */
+.wm-field input[readonly] {
+  background: #141414;
+  color: #cfcfcf;
+  cursor: default;
+}
+.wm-field input[readonly]:focus {
+  border-color: #1e1e1e;
+}
 .wm-input-row {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* Under-18 block notice on the 18+ (tattoo) form. */
+.wm-minor-block {
+  margin: -4px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #5a2b2b;
+  background: #1c0f0f;
+  color: #e6a6a6;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+/* City / State / ZIP: give City more room than State and ZIP. */
+.wm-address-row {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 .wm-provision {
   display: flex;
@@ -267,6 +290,72 @@ button, input, textarea, select { font: inherit; }
 .wm-sig-clear:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+.wm-req {
+  color: var(--accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+}
+.wm-license {
+  position: relative;
+  border: 1px solid #1e1e1e;
+  background: #0e0e0e;
+  border-radius: 10px;
+  padding: 14px;
+}
+/* Visually hidden but still focusable and functional; driven by the label.
+   Scoped under .wm-field so it outweighs `.wm-field input { width: 100% }`,
+   which would otherwise stretch this input full-width and push the page
+   sideways. */
+.wm-field .wm-license-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.wm-license-btn {
+  display: inline-block;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text);
+  padding: 8px 18px;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.wm-license-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.wm-license-input:focus-visible + .wm-license-btn {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.wm-license-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+}
+.wm-license-preview[hidden] {
+  display: none;
+}
+.wm-license-hint {
+  margin: 10px 2px 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.04rem;
+  color: var(--muted);
 }
 .wm-consent {
   display: flex;
