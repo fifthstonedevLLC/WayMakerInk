@@ -198,6 +198,57 @@ button, input, textarea, select { font: inherit; }
   border-radius: 10px;
   font-size: 0.9rem;
 }
+/* Submit-time validation banner (replaces the old alert() popups). Shares the
+   red-notice palette with .wm-minor-block; shown by the submit handler. */
+.wm-form-error {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #5a2b2b;
+  background: #1c0f0f;
+  color: #e6a6a6;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+/* Red highlight on a field that failed submit-time validation. Cleared when
+   the client edits the field (or on the next submit attempt). */
+.wm-field input.wm-invalid,
+.wm-field textarea.wm-invalid,
+.wm-field select.wm-invalid,
+.wm-toggle.wm-invalid,
+.wm-signature.wm-invalid,
+.wm-license.wm-invalid {
+  border-color: #e05a5a;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.3);
+}
+/* Red-tint the background of text fields so the miss is unmistakable. */
+.wm-field input.wm-invalid,
+.wm-field textarea.wm-invalid,
+.wm-field select.wm-invalid {
+  background: #241212;
+}
+/* Keep the red ring and tint even while the invalid field has focus. */
+.wm-field input.wm-invalid:focus,
+.wm-field textarea.wm-invalid:focus,
+.wm-field select.wm-invalid:focus {
+  border-color: #e05a5a;
+  background: #241212;
+}
+/* "Optional" tag marking a provision the client may skip. */
+.wm-optional-badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 9px;
+  border: 1px solid #6b5a1f;
+  border-radius: 999px;
+  background: #1c1708;
+  color: #e6c74d;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
 /* City / State / ZIP: give City more room than State and ZIP. */
 .wm-address-row {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
@@ -377,6 +428,13 @@ button, input, textarea, select { font: inherit; }
   flex-shrink: 0;
   accent-color: var(--accent);
   cursor: pointer;
+}
+/* Missed consent checkbox: red ring instead of the gold accent color. */
+.wm-consent input[type="checkbox"].wm-invalid {
+  accent-color: #e05a5a;
+  outline: 2px solid #e05a5a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.3);
 }
 .wm-actions {
   display: flex;

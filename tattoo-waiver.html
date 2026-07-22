@@ -25,7 +25,7 @@
           <p class="wm-subtitle">Initial each provision after reading it to show that you understand each provision, complete your information, and submit when finished.</p>
         </section>
 
-        <form class="wm-form" data-form-type="tattoo-waiver">
+        <form class="wm-form" data-form-type="tattoo-waiver" novalidate>
           <section class="wm-section">
             <h3>Artist</h3>
             <div class="wm-field">
@@ -64,7 +64,7 @@
             <div class="wm-input-row">
               <div class="wm-field">
                 <label for="phone">Phone</label>
-                <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" />
+                <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" required />
               </div>
               <div class="wm-field">
                 <label for="email">Email</label>
@@ -73,11 +73,11 @@
             </div>
             <div class="wm-field">
               <label for="license">Driver's License / I.D. #</label>
-              <input id="license" name="license" placeholder="License or I.D. number" />
+              <input id="license" name="license" placeholder="License or I.D. number" required/>
             </div>
             <div class="wm-field">
               <label for="address">Address</label>
-              <input id="address" name="address" placeholder="Street address" autocomplete="address-line1" />
+              <input id="address" name="address" placeholder="Street address" autocomplete="address-line1" required/>
             </div>
             <div class="wm-input-row wm-address-row">
               <div class="wm-field">
@@ -90,7 +90,7 @@
               </div>
               <div class="wm-field">
                 <label for="zip">ZIP</label>
-                <input id="zip" name="zip" placeholder="ZIP" autocomplete="postal-code" inputmode="numeric" />
+                <input id="zip" name="zip" placeholder="ZIP" autocomplete="postal-code" inputmode="numeric" required/>
               </div>
             </div>
             <div class="wm-field">
@@ -148,10 +148,6 @@
             </div>
             <div class="wm-provision">
               <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
-              <div>I release all rights to any photographs and video taken of me and the tattoo and give consent in advance to their reproduction in print or electronic form. (If you do NOT initial this provision, please advise and remind your Artist and the Tattoo Studio NOT to take any pictures or video of you and your completed tattoo).</div>
-            </div>
-            <div class="wm-provision">
-              <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
               <div>I agree to reimburse each of the Artists and the Tattoo Studio for any attorney&rsquo;s fees and costs incurred in any legal action I bring against either the Artist or the Tattoo Studio and in which either the Artist or the Tattoo Studio is the prevailing party. I agree that the courts of Iowa in Grundy County shall have personal jurisdiction and venue over me and shall have exclusive jurisdiction for the purpose of litigating any dispute arising out of or related to this agreement.</div>
             </div>
             <div class="wm-provision">
@@ -161,6 +157,10 @@
             <div class="wm-provision">
               <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
               <div>If any provision, section, subsection, clause or phrase of this release is found to be unenforceable or invalid, that portion shall be severed from this contract. The remainder of this contract will then be construed as though the unenforceable portion had never been contained in this document.</div>
+            </div>
+            <div class="wm-provision" data-optional>
+              <button type="button" class="wm-toggle" aria-label="Initial provision (optional)"><span class="wm-toggle-mark"></span></button>
+              <div><span class="wm-optional-badge">Optional</span>I release all rights to any photographs and video taken of me and the tattoo and give consent in advance to their reproduction in print or electronic form. (If you do NOT initial this provision, please advise and remind your Artist and the Tattoo Studio NOT to take any pictures or video of you and your completed tattoo).</div>
             </div>
             <div class="wm-provision">
               <button type="button" class="wm-toggle" aria-label="Initial provision"><span class="wm-toggle-mark"></span></button>
@@ -187,9 +187,10 @@
               <input type="hidden" name="signDate" data-autodate />
             </div>
             <label class="wm-consent">
-              <input type="checkbox" name="electronicConsent" value="yes" required />
+              <input type="checkbox" name="electronicConsent" value="yes" data-label="Electronic signature consent" required />
               <span>I agree that my drawn signature and initials above are my legal electronic signature, that I am signing this document electronically, and that it is as legally binding as a handwritten signature.</span>
             </label>
+            <p class="wm-form-error" data-form-error role="alert" aria-live="assertive" hidden></p>
             <div class="wm-actions">
               <button class="wm-button" type="submit">Submit Waiver</button>
               <a href="piercing-waiver.html">Need the piercing form instead?</a>

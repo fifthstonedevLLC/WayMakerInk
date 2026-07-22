@@ -25,12 +25,12 @@
           <p class="wm-subtitle">Provide your details, initial each acknowledgement, and sign before your appointment.</p>
         </section>
 
-        <form class="wm-form" data-form-type="piercing-waiver">
+        <form class="wm-form" data-form-type="piercing-waiver" novalidate>
           <section class="wm-section">
             <h3>Age Verification</h3>
             <div class="wm-field">
               <label for="is-minor">Is the person receiving the piercing 18 years of age or older?</label>
-              <select id="is-minor" name="ageStatus" data-minor-select required>
+              <select id="is-minor" name="ageStatus" data-minor-select data-label="18-or-older question" required>
                 <option value="" disabled selected>Select one</option>
                 <option value="adult">Yes — 18 or older</option>
                 <option value="minor">No — under 18</option>
@@ -181,7 +181,7 @@
               <input type="hidden" name="signDate" data-autodate />
             </div>
             <label class="wm-consent">
-              <input type="checkbox" name="electronicConsent" value="yes" required />
+              <input type="checkbox" name="electronicConsent" value="yes" data-label="Electronic signature consent" required />
               <span>I agree that my drawn signature and initials above are my legal electronic signature, that I am signing this document electronically, and that it is as legally binding as a handwritten signature.</span>
             </label>
           </section>
@@ -258,6 +258,7 @@
           </section>
 
           <section class="wm-section">
+            <p class="wm-form-error" data-form-error role="alert" aria-live="assertive" hidden></p>
             <div class="wm-actions">
               <button class="wm-button" type="submit">Submit Waiver</button>
               <a href="tattoo-waiver.html">Need the tattoo form instead?</a>
