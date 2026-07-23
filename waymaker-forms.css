@@ -1,14 +1,14 @@
 :root {
   color-scheme: dark;
   --bg: #080808;
-  --surface: #0b0b0b;
-  --surface-2: #101010;
-  --text: #f0ede8;
-  --muted: #7a7a7a;
-  --accent: #C4A982;
-  --accent-strong: #d8c19d;
-  --border: #1a1a1a;
-  --border-2: #2a2a2a;
+  --surface: #080808;
+  --surface-2: #1F1F1F;
+  --text: #F7F7F7;
+  --muted: #666666;
+  --accent: #F5C684;
+  --accent-strong: #F5C684;
+  --border: #999999;
+  --border-2: #999999;
 }
 
 * { box-sizing: border-box; }
@@ -28,13 +28,13 @@ button, input, textarea, select { font: inherit; }
 
 .wm-page { min-height: 100vh; display: flex; flex-direction: column; }
 .wm-footer {
-  background: #050505;
-  border-bottom: 1px solid #141414;
-  border-top: 1px solid #141414;
+  background: #080808;
+  border-bottom: 1px solid #1F1F1F;
+  border-top: 1px solid #1F1F1F;
 }
 .wm-header {
   background: #666666;
-  border-bottom: 1px solid #666666;
+  border-bottom: 1px solid #999999;
   padding: 24px 32px;
   display: flex;
   justify-content: center;
@@ -42,9 +42,9 @@ button, input, textarea, select { font: inherit; }
 .wm-footer {
   margin-top: auto;
   padding: 24px 32px;
-  border-top: 1px solid #141414;
+  border-top: 1px solid #1F1F1F;
   border-bottom: 0;
-  color: #6a6a6a;
+  color: #666666;
   font-size: 0.95rem;
   display: flex;
   justify-content: space-between;
@@ -106,7 +106,7 @@ button, input, textarea, select { font: inherit; }
 .wm-card:focus-visible {
   border-color: var(--accent);
   transform: translateY(-3px);
-  background: #0e0d0b;
+  background: #1F1F1F;
 }
 .wm-card h2 {
   font-size: 1.35rem;
@@ -123,7 +123,7 @@ button, input, textarea, select { font: inherit; }
   justify-content: space-between;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #171717;
+  border-top: 1px solid #999999;
   font-size: 0.76rem;
   letter-spacing: 0.22rem;
   text-transform: uppercase;
@@ -136,7 +136,7 @@ button, input, textarea, select { font: inherit; }
 }
 .wm-section {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 16px;
   padding: 24px;
 }
@@ -156,14 +156,14 @@ button, input, textarea, select { font: inherit; }
   font-size: 0.74rem;
   letter-spacing: 0.2rem;
   text-transform: uppercase;
-  color: #8a8a8a;
+  color: #F7F7F7;
 }
 .wm-field input,
 .wm-field textarea,
 .wm-field select {
   width: 100%;
-  border: 1px solid #1e1e1e;
-  background: #0e0e0e;
+  border: 1px solid #999999;
+  background: #080808;
   color: var(--text);
   padding: 13px 14px;
   border-radius: 10px;
@@ -176,12 +176,12 @@ button, input, textarea, select { font: inherit; }
 }
 /* Calculated, non-editable fields (e.g. Age from date of birth). */
 .wm-field input[readonly] {
-  background: #141414;
-  color: #cfcfcf;
+  background: #1F1F1F;
+  color: #F7F7F7;
   cursor: default;
 }
 .wm-field input[readonly]:focus {
-  border-color: #1e1e1e;
+  border-color: #999999;
 }
 .wm-input-row {
   display: grid;
@@ -239,10 +239,10 @@ button, input, textarea, select { font: inherit; }
   display: inline-block;
   margin-right: 8px;
   padding: 2px 9px;
-  border: 1px solid #6b5a1f;
+  border: 1px solid #F5C684;
   border-radius: 999px;
-  background: #1c1708;
-  color: #e6c74d;
+  background: #1F1F1F;
+  color: #F5C684;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08rem;
@@ -258,7 +258,7 @@ button, input, textarea, select { font: inherit; }
   gap: 14px;
   align-items: flex-start;
   padding: 16px 0;
-  border-bottom: 1px solid #131313;
+  border-bottom: 1px solid #999999;
 }
 .wm-provision:last-child { border-bottom: 0; }
 .wm-toggle {
@@ -285,8 +285,8 @@ button, input, textarea, select { font: inherit; }
 .wm-static-date,
 .wm-static-name {
   width: 100%;
-  border: 1px solid #1e1e1e;
-  background: #0b0b0b;
+  border: 1px solid #999999;
+  background: #1F1F1F;
   color: var(--text);
   padding: 13px 14px;
   border-radius: 10px;
@@ -295,8 +295,8 @@ button, input, textarea, select { font: inherit; }
   min-height: 48px;
 }
 .wm-signature {
-  border: 1px solid #1e1e1e;
-  background: #0e0e0e;
+  border: 1px solid #999999;
+  background: #080808;
   border-radius: 10px;
   padding: 8px;
   transition: border-color 0.2s ease;
@@ -310,8 +310,8 @@ button, input, textarea, select { font: inherit; }
   display: block;
   border-radius: 6px;
   background:
-    linear-gradient(#0e0e0e, #0e0e0e) padding-box,
-    repeating-linear-gradient(0deg, transparent, transparent 158px, #2a2a2a 158px, #2a2a2a 159px);
+    linear-gradient(#080808, #080808) padding-box,
+    repeating-linear-gradient(0deg, transparent, transparent 158px, #999999 158px, #999999 159px);
   cursor: crosshair;
   touch-action: none;
 }
@@ -350,8 +350,8 @@ button, input, textarea, select { font: inherit; }
 }
 .wm-license {
   position: relative;
-  border: 1px solid #1e1e1e;
-  background: #0e0e0e;
+  border: 1px solid #999999;
+  background: #080808;
   border-radius: 10px;
   padding: 14px;
 }
