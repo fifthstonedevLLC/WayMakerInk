@@ -172,6 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   refreshAgeState();
 
+  // Date of birth entry: Month + Day dropdowns and a typed Year (number keypad)
+  // compose into the hidden input[name="dob"] as YYYY-MM-DD, so all the age/minor
+  // logic above keeps reading the same value it did from the old date picker.
+  document.querySelectorAll('[data-dob]').forEach(setupDobPicker);
+
   // Draw-to-sign signature pads.
   document.querySelectorAll('.wm-signature').forEach(setupSignaturePad);
 
@@ -476,6 +481,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // Signature is drawn to a canvas that writes a hidden input — not a native
       // `required` control — so it's checked explicitly. The piercing form adds a
       // separate `guardianSignature` for minors (handled below).
+      // Date of birth is composed from the Month/Day/Year controls into the
+      // hidden input[name="dob"]; that hidden input is skipped by the generic
+      // required check above, so enforce it here and point the client at the
+      // Month dropdown, highlighting all three controls if the date is missing.
+      if (!data.dob?.trim()) {
+        const dobGroup = document.querySelector('[data-dob]');
+        flagMissing('Date of Birth', dobGroup ? dobGroup.querySelector('[data-dob-month]') : null);
+        if (dobGroup) {
+          dobGroup.querySelectorAll('select, input').forEach((el) => {
+            if (el !== firstMissingEl) invalidEls.push(el);
+          });
+        }
+      }
       const signature = data.signature || data.clientSignature;
       if (!signature?.trim()) flagMissing('Signature', document.querySelector('.wm-signature'));
       // License photo lands in a hidden input; highlight the visible upload box.
@@ -583,6 +601,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+  }
+
+  // Wires one Date-of-Birth group: fills the Month options, keeps the Day list
+  // in step with the chosen month/year (so Feb never offers 30/31), and writes
+  // the composed YYYY-MM-DD into the hidden input[name="dob"], firing `change`
+  // so the age/minor logic recalculates exactly as it did for the date picker.
+  function setupDobPicker(group) {
+    const monthEl = group.querySelector('[data-dob-month]');
+    const dayEl = group.querySelector('[data-dob-day]');
+    const yearEl = group.querySelector('[data-dob-year]');
+    const scope = group.closest('.wm-field') || group.parentElement || group;
+    const hidden = scope.querySelector('input[data-dob-value]');
+    if (!monthEl || !dayEl || !yearEl || !hidden) return;
+
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    MONTHS.forEach((name, i) => {
+      const opt = document.createElement('option');
+      opt.value = String(i + 1);
+      opt.textContent = name;
+      monthEl.appendChild(opt);
+    });
+
+    const thisYear = new Date().getFullYear();
+    yearEl.max = String(thisYear);
+
+    // Days in the given 1-based month. With no year yet, assume a leap year so
+    // Feb 29 stays selectable until a year rules it out.
+    const daysInMonth = (m, y) => new Date(y || 2000, m, 0).getDate();
+
+    // Rebuild the Day options to fit the current month/year, preserving the
+    // selected day when it still fits (dropping it when it no longer does).
+    const rebuildDays = () => {
+      const m = parseInt(monthEl.value, 10);
+      const y = parseInt(yearEl.value, 10);
+      const max = m ? daysInMonth(m, y) : 31;
+      const prev = dayEl.value;
+      dayEl.innerHTML = '<option value="" selected disabled>Day</option>';
+      for (let d = 1; d <= max; d++) {
+        const opt = document.createElement('option');
+        opt.value = String(d);
+        opt.textContent = String(d);
+        dayEl.appendChild(opt);
+      }
+      if (prev && parseInt(prev, 10) <= max) dayEl.value = prev;
+    };
+
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const compose = () => {
+      const m = parseInt(monthEl.value, 10);
+      const d = parseInt(dayEl.value, 10);
+      const y = parseInt(yearEl.value, 10);
+      const complete = m >= 1 && m <= 12 && d >= 1 && y >= 1900 && y <= thisYear &&
+        d <= daysInMonth(m, y);
+      const next = complete ? y + '-' + pad2(m) + '-' + pad2(d) : '';
+      if (hidden.value !== next) {
+        hidden.value = next;
+        // Fires the same listener the old date input used → age/minor refresh.
+        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+
+    monthEl.addEventListener('change', () => { rebuildDays(); compose(); });
+    dayEl.addEventListener('change', compose);
+    yearEl.addEventListener('input', () => { rebuildDays(); compose(); });
+    yearEl.addEventListener('change', () => { rebuildDays(); compose(); });
+
+    rebuildDays();
   }
 
   function setupSignaturePad(pad) {

@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   --bg: #080808;
-  --surface: #080808;
+  --surface: #0b0b0b;
   --surface-2: #1F1F1F;
   --text: #F7F7F7;
   --muted: #666666;
@@ -136,7 +136,7 @@ button, input, textarea, select { font: inherit; }
 }
 .wm-section {
   background: var(--surface);
-  border: none;
+  border: 1px solid #444444;
   border-radius: 16px;
   padding: 24px;
 }
@@ -252,6 +252,14 @@ button, input, textarea, select { font: inherit; }
 /* City / State / ZIP: give City more room than State and ZIP. */
 .wm-address-row {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+/* Date of birth: Month + Day dropdowns beside a typed Year (number keypad).
+   Replaces the native date calendar, whose year-scrolling confused older
+   clients on mobile. The three controls inherit the standard field styling. */
+.wm-dob {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  gap: 10px;
 }
 .wm-provision {
   display: flex;

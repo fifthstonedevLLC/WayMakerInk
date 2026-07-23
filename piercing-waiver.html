@@ -65,8 +65,17 @@
             </div>
             <div class="wm-input-row">
               <div class="wm-field">
-                <label for="pierce-dob">Date of Birth</label>
-                <input id="pierce-dob" name="dob" type="date" required />
+                <label for="pierce-dob-month">Date of Birth</label>
+                <div class="wm-dob" data-dob>
+                  <select id="pierce-dob-month" data-dob-month aria-label="Birth month" aria-required="true">
+                    <option value="" selected disabled>Month</option>
+                  </select>
+                  <select data-dob-day aria-label="Birth day" aria-required="true">
+                    <option value="" selected disabled>Day</option>
+                  </select>
+                  <input type="number" data-dob-year aria-label="Birth year" inputmode="numeric" min="1900" placeholder="Year" aria-required="true" />
+                </div>
+                <input type="hidden" name="dob" data-dob-value />
               </div>
               <div class="wm-field">
                 <label for="pierce-age">Age</label>
