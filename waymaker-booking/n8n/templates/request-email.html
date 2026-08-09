@@ -1,0 +1,185 @@
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:0 12px;">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
+
+        <!-- header -->
+        <tr>
+          <td align="center" bgcolor="#666666" style="background-color:#666666;padding:20px 24px;border-bottom:1px solid #999999;">
+            <img src="https://forms.waymakerink.com/WaymakerInk_Logo_transparent.png" width="160" alt="WayMaker Ink" style="display:block;width:160px;height:auto;border:0;">
+          </td>
+        </tr>
+
+        <!-- title -->
+        <tr>
+          <td style="padding:34px 28px 18px;">
+            <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">New Appointment Request</p>
+            <h1 style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;font-weight:normal;color:#f7f7f7;">
+              {{ $('Booking Request').item.json.body.firstName || '' }} {{ $('Booking Request').item.json.body.lastName || '' }}
+            </h1>
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#666666;">
+              Submitted {{ ($('Booking Request').item.json.body.submittedAt ? new Date($('Booking Request').item.json.body.submittedAt).toLocaleString('en-US',{ dateStyle:'medium', timeStyle:'short' }) : 'Just now') }} &nbsp;·&nbsp; Ref {{ $json.linkRid || $json.requestId || $json.rid || $('Booking Request').item.json.body.rid || $('Booking Request').item.json.rid || $execution.id }}
+            </p>
+          </td>
+        </tr>
+
+        <!-- the piece -->
+        <tr>
+          <td style="padding:0 28px 18px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+              <tr>
+                <td style="padding:20px 22px;">
+                  <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">The Piece</p>
+                  <p style="margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#f7f7f7;">
+                    {{ $('Booking Request').item.json.body.idea }}
+                  </p>
+
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="34%" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Placement</td>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.placement }}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Size</td>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.size }}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Style</td>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.style }}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Artist</td>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.artistName || $('Booking Request').item.json.body.artist || 'Not specified' }}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">First tattoo</td>
+                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.firstTattoo || 'Not given' }}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- contact -->
+        <tr>
+          <td style="padding:0 28px 18px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+              <tr>
+                <td style="padding:20px 22px;">
+                  <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Contact</p>
+                  <p style="margin:0 0 5px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
+                    <a href="mailto:{{ $('Booking Request').item.json.body.email || '' }}" style="color:#f5c684;text-decoration:none;">{{ $('Booking Request').item.json.body.email || 'No email provided' }}</a>
+                  </p>
+                  <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
+                    {{ $('Booking Request').item.json.body.phone || 'No phone given' }}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- references -->
+        <tr>
+          <td style="padding:0 28px 22px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+              <tr>
+                <td style="padding:20px 22px;">
+                  <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">References</p>
+                  <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
+                    {{ Number($('Booking Request').item.json.body.referenceCount || 0) > 0 ? Number($('Booking Request').item.json.body.referenceCount) + ' image' + (Number($('Booking Request').item.json.body.referenceCount) > 1 ? 's' : '') + ' attached to this request.' : 'No reference images were submitted.' }}
+                  </p>
+                  <a href="https://drive.google.com/drive/folders/PASTE_BOOKING_REQUESTS_FOLDER_ID" style="display:inline-block;padding:11px 22px;border:1px solid #999999;color:#f7f7f7;font-family:Arial,Helvetica,sans-serif;font-size:13px;text-decoration:none;">
+                    Open Booking Requests Folder
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ============ DECISION ============ -->
+        <tr>
+          <td style="padding:0 28px 8px;">
+            <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Send Booking Link</p>
+            <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#666666;">
+              Tap the session length this piece needs. You'll get a chance to adjust the estimate and add a note before anything sends.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 28px 10px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="50%" style="padding:0 5px 10px 0;">
+                  <a href="{{ $json.links.tier1 }}"
+                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                    1 hr &nbsp;·&nbsp; $125
+                  </a>
+                </td>
+                <td width="50%" style="padding:0 0 10px 5px;">
+                  <a href="{{ $json.links.tier2 }}"
+                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                    2 hr &nbsp;·&nbsp; $250
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td width="50%" style="padding:0 5px 10px 0;">
+                  <a href="{{ $json.links.tier3 }}"
+                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                    3 hr &nbsp;·&nbsp; $375
+                  </a>
+                </td>
+                <td width="50%" style="padding:0 0 10px 5px;">
+                  <a href="{{ $json.links.tier4 }}"
+                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                    4 hr &nbsp;·&nbsp; $500
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding:0 0 10px;">
+                  <a href="{{ $json.links.tier5 }}"
+                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                    All Day &nbsp;·&nbsp; 7 hr &nbsp;·&nbsp; $875
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding:6px 0 0;">
+                  <a href="{{ $json.links.decline }}"
+                     style="display:block;padding:13px 8px;background-color:#0b0b0b;border:1px solid #5a2b2b;color:#e6a6a6;font-family:Arial,Helvetica,sans-serif;font-size:14px;text-align:center;text-decoration:none;">
+                    Decline this request
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:14px 28px 0;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#666666;">
+              Nothing is sent to {{ $('Booking Request').item.json.body.firstName }} until you review and press Send on the next screen. Once you've used one of these buttons, the rest stop working.
+            </p>
+          </td>
+        </tr>
+
+        <!-- footer -->
+        <tr>
+          <td style="padding:30px 28px 40px;border-top:1px solid #1f1f1f;">
+            <p style="margin:22px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#666666;">© 2026 WayMaker Ink LLC</p>
+            <p style="margin:4px 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12px;color:#f5c684;">“I am the way, the truth, and the life.” — John 14:6</p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>

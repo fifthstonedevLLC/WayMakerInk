@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink Appointment Request</title>
+    <meta name="description" content="Request a tattoo appointment with WayMaker Ink. Share your idea and your artist will follow up with an estimate and a booking link." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/png" href="/WaymakerInk_Logo_transparent.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js"></script>
+    <script defer src="/app.js"></script>
+  </head>
+  <body class="wm-page">
+    <header class="wm-header">
+      <a href="https://waymakerink.com" class="wm-brand" aria-label="WayMaker Ink home">
+        <img src="/WaymakerInk_Logo_transparent.png" alt="WayMaker Ink logo" class="wm-logo" />
+      </a>
+    </header>
+
+    <main class="wm-main">
+      <div class="wm-shell">
+
+        <!-- ============================== CHOOSER (/) ============================== -->
+        <div data-view="chooser" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Appointment Request</p>
+            <h1 class="wm-title">Who would you like to work with?</h1>
+            <p class="wm-subtitle">Choose your artist and tell them about the piece you have in mind.</p>
+          </section>
+          <div class="wm-grid" data-chooser-grid></div>
+        </div>
+
+        <!-- =============================== FORM (/nic) ============================= -->
+        <div data-view="form" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Appointment Request</p>
+            <h1 class="wm-title" data-headline>Tell us about the tattoo you have in mind.</h1>
+            <p class="wm-subtitle">Every piece starts with a conversation. Share your idea below and your artist will review it personally, then follow up by email with a time estimate, a price, and a link to book.</p>
+          </section>
+
+          <form class="wm-form" data-booking-form novalidate>
+            <p class="wm-form-error" data-form-error hidden></p>
+
+            <section class="wm-section">
+              <h3>Artist</h3>
+              <div class="wm-field">
+                <label>Requesting With</label>
+                <div class="wm-static-name" data-artist-display>—</div>
+                <input type="hidden" name="artist" data-artist-key />
+                <input type="hidden" name="artistName" data-artist-name />
+                <input type="hidden" name="submittedAt" data-submitted-at />
+                <input type="hidden" name="pageUrl" data-page-url />
+                <!-- Generated once per page load and reused across retries, so a
+                     submission that times out and is resent lands as one row. -->
+                <input type="hidden" name="rid" value="" data-request-rid />
+                <input type="hidden" name="company" tabindex="-1" autocomplete="off" data-hp aria-hidden="true" />
+              </div>
+            </section>
+
+            <section class="wm-section">
+              <h3>Your Information</h3>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="first-name">First Name <span class="wm-req">Required</span></label>
+                  <input id="first-name" name="firstName" placeholder="First" autocomplete="given-name" required />
+                </div>
+                <div class="wm-field">
+                  <label for="last-name">Last Name <span class="wm-req">Required</span></label>
+                  <input id="last-name" name="lastName" placeholder="Last" autocomplete="family-name" required />
+                </div>
+              </div>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="email">Email <span class="wm-req">Required</span></label>
+                  <input id="email" name="email" type="email" placeholder="your@email.com" autocomplete="email" inputmode="email" required />
+                  <p class="wm-note">Where your estimate and booking link will be sent.</p>
+                </div>
+                <div class="wm-field">
+                  <label for="phone">Phone</label>
+                  <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" inputmode="tel" />
+                  <p class="wm-note">Optional — we follow up by email.</p>
+                </div>
+              </div>
+              <div class="wm-field">
+                <label>Is This Your First Tattoo?</label>
+                <div class="wm-choice" role="radiogroup" aria-label="Is this your first tattoo?">
+                  <label class="wm-chip"><input type="radio" name="firstTattoo" value="Yes" /><span>Yes</span></label>
+                  <label class="wm-chip"><input type="radio" name="firstTattoo" value="No" checked /><span>No</span></label>
+                </div>
+              </div>
+            </section>
+
+            <section class="wm-section">
+              <h3>The Piece</h3>
+              <div class="wm-field">
+                <label for="idea">Describe Your Idea <span class="wm-req">Required</span></label>
+                <textarea id="idea" name="idea" rows="6" placeholder="Subject, style, mood, any lettering or dates, whether it's a cover-up or an addition to existing work…" required></textarea>
+                <p class="wm-note">The more detail here, the better the estimate your artist can send back.</p>
+              </div>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="placement">Placement On The Body <span class="wm-req">Required</span></label>
+                  <input id="placement" name="placement" placeholder="e.g. inner right forearm" required />
+                </div>
+                <div class="wm-field">
+                  <label for="size">Approximate Size <span class="wm-req">Required</span></label>
+                  <select id="size" name="size" required>
+                    <option value="" selected>Select a size…</option>
+                    <option value="Under 2&quot;">Under 2"</option>
+                    <option value="2-4&quot;">2-4"</option>
+                    <option value="4-6&quot;">4-6"</option>
+                    <option value="6-8&quot;">6-8"</option>
+                    <option value="10&quot;+">10"+</option>
+                  </select>
+                </div>
+              </div>
+              <div class="wm-field">
+                <label>Style</label>
+                <div class="wm-choice" role="radiogroup" aria-label="Style">
+                  <label class="wm-chip"><input type="radio" name="style" value="Black &amp; grey" checked /><span>Black &amp; Grey</span></label>
+                  <label class="wm-chip"><input type="radio" name="style" value="Color" /><span>Color</span></label>
+                  <label class="wm-chip"><input type="radio" name="style" value="Not sure yet" /><span>Not Sure Yet</span></label>
+                </div>
+              </div>
+            </section>
+
+            <section class="wm-section">
+              <h3>References</h3>
+              <div class="wm-field">
+                <label for="refs-input">Reference Images</label>
+                <div class="wm-refs" data-refs>
+                  <input id="refs-input" class="wm-refs-input" type="file" accept="image/*" multiple data-refs-input />
+                  <label for="refs-input" class="wm-refs-btn">Add Images</label>
+                  <p class="wm-refs-hint" data-refs-hint></p>
+                  <div class="wm-ref-grid" data-refs-grid></div>
+                </div>
+              </div>
+              <label class="wm-consent" for="age-confirm">
+                <input type="checkbox" id="age-confirm" name="ageConfirm" value="yes" required />
+                <span>I confirm I am 18 years of age or older. Tattoo services are available to clients 18 and older only.</span>
+              </label>
+            </section>
+
+            <div class="wm-progress" data-progress hidden><i></i></div>
+
+            <div class="wm-actions">
+              <p class="wm-note wm-note-wide">This is a request, not a confirmed booking. Your artist reviews every request personally and replies by email.</p>
+              <button type="submit" class="wm-button" data-submit>Send Request</button>
+            </div>
+            <p class="wm-status" data-status role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <!-- ============================== SUCCESS ============================== -->
+        <!-- Shown when the URL names an artist who isn't taking requests, or
+             isn't an artist at all. Never silently fall back to another
+             artist — a request filed against the wrong person is worse than
+             no request. -->
+        <div data-view="unavailable" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Not Available</p>
+            <h1 class="wm-title" data-unavailable-title>This artist isn't taking requests right now.</h1>
+            <p class="wm-subtitle" data-unavailable-body></p>
+          </section>
+        </div>
+
+        <div data-view="done" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Request Received</p>
+            <h1 class="wm-title">Your request is in.</h1>
+          </section>
+          <section class="wm-section">
+            <h3>What Happens Next</h3>
+            <p class="wm-done-body" data-done-body></p>
+            <p class="wm-note">If you don't hear from us within a few days, check your spam folder before reaching out.</p>
+          </section>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="wm-footer">
+      <span>© 2026 WayMaker Ink LLC</span>
+      <span>“I am the way, the truth, and the life.” — John 14:6</span>
+    </footer>
+  </body>
+</html>

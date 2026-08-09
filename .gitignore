@@ -1,0 +1,66 @@
+# ==========================================================================
+# WayMaker Ink
+# ==========================================================================
+
+# --- Secrets -------------------------------------------------------------
+# Real values live in the Dokploy environment panel, never in the repo.
+# .env.example is the committed template — keep it free of real values.
+.env
+.env.*
+!.env.example
+
+# Service-account and OAuth material, if any ever lands here
+*service-account*.json
+*credentials*.json
+*.pem
+*.key
+
+# --- Generated at runtime ------------------------------------------------
+# NOTE: waymaker-booking/public/config.js is deliberately NOT ignored. It is
+# the committed local-dev fallback; docker-entrypoint.sh overwrites it inside
+# the running container, which never touches the working tree.
+
+# --- Dependencies / build -------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# Python — Service Contract Template/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Office / OS cruft ----------------------------------------------------
+# Word and Excel leave these behind while a file is open
+~$*
+.~lock.*#
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editor ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code per-machine settings; the shared .claude/settings.json (if one
+# is added) should stay tracked.
+#
+# The leading **/ matters. A pattern containing a slash is anchored to the
+# directory holding this .gitignore, so a bare `.claude/settings.local.json`
+# would match only the one at the root and silently commit every nested copy.
+**/.claude/settings.local.json
+
+# --- Client deliverables --------------------------------------------------
+# Generated proposal/contract PDFs and any per-client data file copied from
+# contract_data_template.json. Uncomment if you start producing these in
+# place — they contain client names, rates and terms.
+# Service Contract Template/*.pdf
+# Service Contract Template/contract_data_*.json
+# !Service Contract Template/contract_data_template.json

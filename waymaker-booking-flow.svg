@@ -1,0 +1,157 @@
+<svg viewBox="0 0 1020 1020" width="1020" height="1020" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ti2 de2">
+<title id="ti2">WayMaker Ink booking approval and deposit workflow</title>
+<desc id="de2">A client books a held slot on Acuity, the artist approves or denies it, a deposit is collected after approval, and cancellations and the onsite waiver run as separate tracks.</desc>
+<rect x="0" y="0" width="1020" height="1020" fill="#ffffff"/>
+<style>
+.t{font:600 14px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;fill:#0f172a}
+.s{font:400 11.5px ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;fill:#475569}
+.lb{font:700 10.5px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#334155;letter-spacing:.09em}
+.hd{font:700 13.5px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#0f172a}
+.bx{fill:#ffffff;stroke:#334155;stroke-width:2}
+.hold{fill:#dbeafe;stroke:#1d4ed8;stroke-width:2}
+.holdt{font:600 14px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#1e3a8a}
+.holds{font:600 11.5px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#1e40af}
+.hu{fill:#f59e0b;stroke:#b45309;stroke-width:2}
+.ht{font:700 15px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#451a03}
+.hs{font:600 11px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#5c2a06}
+.rl{fill:#fee2e2;stroke:#b91c1c;stroke-width:2}
+.rlt{font:600 14px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#7f1d1d}
+.rls{font:400 11.5px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#991b1b}
+.cf{fill:#047857;stroke:#065f46;stroke-width:2}
+.cft{font:700 15px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#ffffff}
+.cfs{font:500 11.5px ui-sans-serif,system-ui,-apple-system,sans-serif;fill:#a7f3d0}
+.ln{stroke:#475569;stroke-width:2.2;fill:none}
+.pn{fill:#ffffff;stroke:#334155;stroke-width:2}
+</style>
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+
+<text x="20" y="28" class="lb">BOOKING — REQUEST TO CONFIRMED</text>
+
+<rect x="240" y="48" width="300" height="56" rx="8" class="bx"/>
+<text x="390" y="74" class="t" text-anchor="middle">book.waymakerink.com/nic · /laynie</text>
+<text x="390" y="92" class="s" text-anchor="middle">Redirects to Acuity, filtered by artist</text>
+
+<rect x="240" y="128" width="300" height="56" rx="8" class="bx"/>
+<text x="390" y="154" class="t" text-anchor="middle">Client picks length + open slot</text>
+<text x="390" y="172" class="s" text-anchor="middle">60 min · 2 hr · half day · full day</text>
+
+<rect x="240" y="208" width="300" height="60" rx="8" class="hold"/>
+<text x="390" y="234" class="holdt" text-anchor="middle">Acuity creates $0 appointment</text>
+<text x="390" y="253" class="holds" text-anchor="middle">SLOT HELD — blocks other requests</text>
+
+<rect x="240" y="292" width="300" height="52" rx="8" class="bx"/>
+<text x="390" y="316" class="t" text-anchor="middle">Client sees: pending approval</text>
+<text x="390" y="334" class="s" text-anchor="middle">Acuity email template reworded</text>
+
+<rect x="240" y="368" width="300" height="56" rx="8" class="bx"/>
+<text x="390" y="394" class="t" text-anchor="middle">n8n alerts Nic or Laynie</text>
+<text x="390" y="412" class="s" text-anchor="middle">SMS or email · Approve / Deny</text>
+
+<polygon points="390,442 500,496 390,550 280,496" class="hu"/>
+<text x="390" y="493" class="ht" text-anchor="middle">Approve?</text>
+<text x="390" y="510" class="hs" text-anchor="middle">one tap</text>
+
+<rect x="240" y="578" width="300" height="56" rx="8" class="bx"/>
+<text x="390" y="604" class="t" text-anchor="middle">Deposit link sent</text>
+<text x="390" y="622" class="s" text-anchor="middle">Square or Stripe · 48 hr clock</text>
+
+<polygon points="390,654 490,702 390,750 290,702" class="bx"/>
+<text x="390" y="700" class="t" text-anchor="middle">Deposit paid?</text>
+<text x="390" y="717" class="s" text-anchor="middle">within window</text>
+
+<rect x="240" y="780" width="300" height="60" rx="8" class="cf"/>
+<text x="390" y="806" class="cft" text-anchor="middle">Confirmed</text>
+<text x="390" y="825" class="cfs" text-anchor="middle">Syncs to their Google Calendar</text>
+
+<rect x="20" y="466" width="182" height="58" rx="8" class="bx"/>
+<text x="111" y="492" class="t" text-anchor="middle">Denial form</text>
+<text x="111" y="510" class="s" text-anchor="middle">Reason required</text>
+
+<rect x="20" y="552" width="182" height="50" rx="8" class="bx"/>
+<text x="111" y="573" class="t" text-anchor="middle">Client notified</text>
+<text x="111" y="590" class="s" text-anchor="middle">With alternate times</text>
+
+<rect x="20" y="616" width="182" height="46" rx="8" class="rl"/>
+<text x="111" y="645" class="rlt" text-anchor="middle">Slot released</text>
+
+<rect x="20" y="674" width="182" height="56" rx="8" class="rl"/>
+<text x="111" y="699" class="rlt" text-anchor="middle">Reminder, then release</text>
+<text x="111" y="717" class="rls" text-anchor="middle">Slot freed automatically</text>
+
+<path d="M390,104 L390,126" class="ln" marker-end="url(#a2)"/>
+<path d="M390,184 L390,206" class="ln" marker-end="url(#a2)"/>
+<path d="M390,268 L390,290" class="ln" marker-end="url(#a2)"/>
+<path d="M390,344 L390,366" class="ln" marker-end="url(#a2)"/>
+<path d="M390,424 L390,440" class="ln" marker-end="url(#a2)"/>
+<path d="M390,550 L390,576" class="ln" marker-end="url(#a2)"/>
+<path d="M390,634 L390,652" class="ln" marker-end="url(#a2)"/>
+<path d="M390,750 L390,778" class="ln" marker-end="url(#a2)"/>
+<path d="M280,496 L205,495" class="ln" marker-end="url(#a2)"/>
+<path d="M290,702 L205,702" class="ln" marker-end="url(#a2)"/>
+<path d="M111,524 L111,550" class="ln" marker-end="url(#a2)"/>
+<path d="M111,602 L111,614" class="ln" marker-end="url(#a2)"/>
+
+<text x="238" y="488" class="lb" text-anchor="end">DENY</text>
+<text x="404" y="568" class="lb">APPROVE</text>
+<text x="238" y="694" class="lb" text-anchor="end">NO</text>
+<text x="404" y="772" class="lb">YES</text>
+
+<rect x="610" y="48" width="390" height="292" rx="10" class="pn"/>
+<path d="M610,58 a10,10 0 0 1 10,-10 h370 a10,10 0 0 1 10,10 v52 h-390 z" fill="#f1f5f9"/>
+<line x1="610" y1="110" x2="1000" y2="110" stroke="#334155" stroke-width="2"/>
+<text x="630" y="76" class="hd">Cancellation — any state</text>
+<text x="630" y="96" class="s">Acuity email → same n8n Gmail trigger</text>
+<text x="630" y="138" class="t">Pending</text>
+<text x="630" y="156" class="s">Withdraw request, free the slot</text>
+<line x1="630" y1="170" x2="980" y2="170" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="630" y="192" class="t">Approved, unpaid</text>
+<text x="630" y="210" class="s">Void payment link, stop the clock</text>
+<line x1="630" y1="224" x2="980" y2="224" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="630" y="246" class="t">Deposit paid</text>
+<text x="630" y="264" class="s">Hold or refund per policy — human</text>
+<line x1="630" y1="278" x2="980" y2="278" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="630" y="300" class="t">No-show</text>
+<text x="630" y="318" class="s">Same path, different reason code</text>
+
+<rect x="610" y="364" width="390" height="84" rx="10" class="pn"/>
+<text x="630" y="392" class="hd">Client reschedule: turned off</text>
+<text x="630" y="413" class="s">A reschedule re-enters as a new request, so</text>
+<text x="630" y="431" class="s">there stays exactly one path to the calendar.</text>
+
+<text x="610" y="490" class="lb">LEGEND</text>
+<rect x="611" y="502" width="16" height="16" rx="4" class="bx"/>
+<text x="637" y="515" class="s">Automated step — Acuity or n8n</text>
+<rect x="611" y="528" width="16" height="16" rx="4" class="hu"/>
+<text x="637" y="541" class="s">Human decision</text>
+<rect x="611" y="554" width="16" height="16" rx="4" class="hold"/>
+<text x="637" y="567" class="s">Slot held, not yet promised</text>
+<rect x="611" y="580" width="16" height="16" rx="4" class="rl"/>
+<text x="637" y="593" class="s">Slot returns to open</text>
+<rect x="611" y="606" width="16" height="16" rx="4" class="cf"/>
+<text x="637" y="619" class="s">Booked and paid</text>
+
+<line x1="20" y1="872" x2="1000" y2="872" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="20" y="898" class="lb">SEPARATE WORKFLOW — DAY OF APPOINTMENT, ONSITE</text>
+
+<rect x="20" y="914" width="230" height="60" rx="8" class="bx"/>
+<text x="135" y="940" class="t" text-anchor="middle">Client arrives</text>
+<text x="135" y="958" class="s" text-anchor="middle">Day of appointment</text>
+
+<rect x="270" y="914" width="230" height="60" rx="8" class="bx"/>
+<text x="385" y="940" class="t" text-anchor="middle">Tablet: today's clients</text>
+<text x="385" y="958" class="s" text-anchor="middle">Tap a name, fields prefill</text>
+
+<rect x="520" y="914" width="230" height="60" rx="8" class="bx"/>
+<text x="635" y="940" class="t" text-anchor="middle">Sign waiver</text>
+<text x="635" y="958" class="s" text-anchor="middle">Type derived, not asked</text>
+
+<rect x="770" y="914" width="230" height="60" rx="8" class="cf"/>
+<text x="885" y="940" class="cft" text-anchor="middle">PDF to Drive folder</text>
+<text x="885" y="958" class="cfs" text-anchor="middle">Row marked waiver on file</text>
+
+<path d="M250,944 L266,944" class="ln" marker-end="url(#a2)"/>
+<path d="M500,944 L516,944" class="ln" marker-end="url(#a2)"/>
+<path d="M750,944 L766,944" class="ln" marker-end="url(#a2)"/>
+
+<text x="20" y="1004" class="s">The only thing the two workflows share is the client's Drive folder and their row in the booking queue.</text>
+</svg>

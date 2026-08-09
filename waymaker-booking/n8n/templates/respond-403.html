@@ -1,0 +1,159 @@
+<!--
+  n8n → /decide workflow → B7 "Respond 403" node
+  Respond With: Text   ·   Response Code: 403
+  Response Headers:
+      Content-Type   text/html; charset=utf-8
+      Cache-Control  no-store
+
+  Shown when the link fails verification — bad or missing rid, unknown
+  request, or a status that is no longer NEW (already actioned, declined,
+  or booked). Deliberately vague about which: the artist only needs to know
+  it is stale, and a page that distinguishes cases leaks information.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink — Link No Longer Active</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/png" href="https://forms.waymakerink.com/WaymakerInk_Logo_transparent.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080808;
+        --surface: #0b0b0b;
+        --text: #f7f7f7;
+        --muted: #666666;
+        --accent: #f5c684;
+        --danger-border: #5a2b2b;
+        --danger-bg: #1c0f0f;
+        --danger-text: #e6a6a6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: 'DM Sans', Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      img { max-width: 100%; display: block; }
+      .wm-header {
+        background: #666666;
+        border-bottom: 1px solid #999999;
+        padding: 24px 32px;
+        display: flex;
+        justify-content: center;
+      }
+      .wm-logo { width: 200px; height: auto; object-fit: contain; }
+      .wm-main { flex: 1; padding: 64px 24px 96px; }
+      .wm-shell { max-width: 640px; margin: 0 auto; }
+      .wm-intro { text-align: center; margin-bottom: 40px; }
+      .wm-kicker {
+        font-size: 0.75rem;
+        letter-spacing: 0.35rem;
+        text-transform: uppercase;
+        color: var(--danger-text);
+        margin-bottom: 16px;
+      }
+      .wm-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        line-height: 1.15;
+        margin: 0 0 16px;
+      }
+      .wm-subtitle { color: var(--muted); margin: 0; }
+      .wm-notice {
+        border: 1px solid var(--danger-border);
+        background: var(--danger-bg);
+        color: var(--danger-text);
+        padding: 16px 18px;
+        margin-bottom: 24px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+      .wm-section {
+        background: var(--surface);
+        border: 1px solid #444444;
+        padding: 24px;
+      }
+      .wm-section h3 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+        letter-spacing: 0.24rem;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .wm-list { margin: 0; padding-left: 20px; color: var(--text); }
+      .wm-list li { margin-bottom: 10px; }
+      .wm-list li:last-child { margin-bottom: 0; }
+      .wm-note {
+        margin: 20px 0 0;
+        font-size: 0.8rem;
+        letter-spacing: 0.04rem;
+        color: var(--muted);
+      }
+      .wm-footer {
+        margin-top: auto;
+        padding: 24px 32px;
+        border-top: 1px solid #1f1f1f;
+        color: #666666;
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 760px) {
+        .wm-main { padding: 42px 16px 72px; }
+        .wm-header, .wm-footer { padding-left: 18px; padding-right: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wm-header">
+      <img src="https://forms.waymakerink.com/WaymakerInk_Logo_transparent.png" alt="WayMaker Ink logo" class="wm-logo" />
+    </header>
+
+    <main class="wm-main">
+      <div class="wm-shell">
+        <section class="wm-intro">
+          <p class="wm-kicker">Link No Longer Active</p>
+          <h1 class="wm-title">This request has already been handled.</h1>
+          <p class="wm-subtitle">Nothing was sent to the client, and nothing was changed just now.</p>
+        </section>
+
+        <p class="wm-notice">
+          These buttons work once. After a booking link or decline has gone out, the rest of the
+          buttons in that email stop working — so a second tap, or a forwarded copy of the email,
+          can't send anything twice.
+        </p>
+
+        <section class="wm-section">
+          <h3>What To Do</h3>
+          <ul class="wm-list">
+            <li>If you already sent this client a booking link, you're done — no action needed.</li>
+            <li>To send a different session length than the one you picked, email the client directly with the correct link.</li>
+            <li>If you don't remember acting on this request, check the request queue for its current status before doing anything else.</li>
+            <li>If this looks wrong, forward the original request email to Fifth Stone Dev rather than tapping again.</li>
+          </ul>
+          <p class="wm-note">You can close this tab.</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="wm-footer">
+      <span>© 2026 WayMaker Ink LLC</span>
+      <span>“I am the way, the truth, and the life.” — John 14:6</span>
+    </footer>
+  </body>
+</html>
