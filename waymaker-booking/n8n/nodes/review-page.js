@@ -89,13 +89,15 @@ const shell = (inner) => `<!doctype html>
    until they expire.
 
    Undecided is NEW (what the append writes), PENDING, or an empty cell.
-   Anything else — tier1…tier5, declined — means someone already answered.
-   This has to normalise case and match the gate in nodes/commit.js
-   exactly; when the two disagree, one of them locks out every request. */
-const currentStatus = String(row.status || 'NEW').trim().toUpperCase();
-const isOpen = currentStatus === 'NEW' || currentStatus === 'PENDING';
+   Anything else — LINK SENT, DECLINED, BOOKED — means someone already
+   answered. This has to normalise case and match OPEN_STATUSES in
+   nodes/commit.js exactly; when the two disagree, one of them locks out
+   every request. */
+const OPEN_STATUSES = ['NEW', 'PENDING', ''];
 
-if (!isOpen) {
+const currentStatus = String(row.status || 'NEW').trim().toUpperCase();
+
+if (!OPEN_STATUSES.includes(currentStatus)) {
   return [{ json: { html: shell(`
     <p class="kicker">Already Handled</p>
     <h1>This request has been decided.</h1>

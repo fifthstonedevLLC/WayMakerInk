@@ -94,10 +94,36 @@ if (!link.action) {
   );
 }
 
+/* Request lifecycle. `status` records where the request is, not what was
+   chosen — the tier goes in its own `tierSent` column, so that filtering the
+   sheet for "waiting on the client" doesn't mean listing five tier values and
+   remembering to add a sixth when a tier is added.
+
+     NEW        appended by Workflow A, nobody has looked at it
+     LINK SENT  artist priced it; client has the estimate and booking link
+     DECLINED   artist turned it down
+     BOOKED     client actually booked (set elsewhere — see below)
+
+   BOOKED is not written here. This node ends at LINK SENT; something watching
+   Acuity has to move it on. The gate below already treats it as decided, so
+   that workflow can be added without touching this one. */
+const STATUS = {
+  NEW: 'NEW',
+  LINK_SENT: 'LINK SENT',
+  DECLINED: 'DECLINED',
+  BOOKED: 'BOOKED'
+};
+
+/* Statuses that still count as undecided. An empty cell is included because a
+   row can be appended before the status column is written. Must stay in step
+   with the same list in review-page.js — when the two disagree, one of the
+   workflows locks out every request. */
+const OPEN_STATUSES = [STATUS.NEW, 'PENDING', ''];
+
 /* Second gate. The first was on the GET; this one covers the window between
    the page rendering and the artist pressing send. */
-const currentStatus = String(row.status || 'NEW').trim().toUpperCase();
-if (currentStatus !== 'NEW' && currentStatus !== 'PENDING') {
+const currentStatus = String(row.status || STATUS.NEW).trim().toUpperCase();
+if (!OPEN_STATUSES.includes(currentStatus)) {
   return [{
     json: {
       alreadyDecided: true,
@@ -149,7 +175,14 @@ return [{
 
     /* Straight into the Sheets/Data Table update node. Match on rid. */
     rid:       link.rid,
-    status:    isDecline ? 'declined' : link.action,
+    status:    isDecline ? STATUS.DECLINED : STATUS.LINK_SENT,
+
+    /* Which tier was sent, kept apart from the lifecycle status. Blank on a
+       decline — nothing was quoted. `estimate` holds the human-readable
+       version the artist actually edited on the review page; this is the
+       machine-readable key that matches BOOKING_LINKS. */
+    tierSent:  isDecline ? '' : normalizedAction,
+
     decidedAt,
     estimate:  link.estimate,
     artistNote: link.note,

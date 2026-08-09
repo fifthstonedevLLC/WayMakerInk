@@ -78,17 +78,21 @@ lookup by `rid` and an update in place.
 Columns:
 
 ```
-rid  status  decidedAt  estimate  artistNote
+rid  status  tierSent  decidedAt  estimate  artistNote
 artistKey  artistName  artistEmail
 firstName  lastName  email  phone  firstTattoo
 idea  placement  size  style
 submittedAt  pageUrl  referenceCount  driveFolder
 ```
 
-`status` starts as `NEW` and becomes `tier1`…`tier5` or `declined`. That
-column is the entire mechanism behind *"once you've used one of these buttons,
-the rest stop working"* — the links themselves stay cryptographically valid
-until `exp`, they just stop doing anything.
+`status` starts as `NEW` and becomes `LINK SENT` or `DECLINED`, with `BOOKED`
+reserved for a future workflow watching Acuity. Which tier was quoted is a
+separate `tierSent` column — the status says where the request is, not what was
+chosen, so "waiting on a client" stays one filter however many tiers exist.
+
+That column is the entire mechanism behind *"once you've used one of these
+buttons, the rest stop working"* — the links themselves stay cryptographically
+valid until `exp`, they just stop doing anything.
 
 Two Code files gate on it, and they have to agree: `nodes/review-page.js`
 decides whether to render the form, `nodes/commit.js` decides whether to

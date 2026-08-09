@@ -10,12 +10,28 @@ silently breaks the reference. Unmarked names are yours to change.
 
 ### Status vocabulary
 
-One value means undecided, and three files gate on it. A row is **`NEW`** from
-append until a decision lands, then becomes `tier1`…`tier5` or `declined`.
-`PENDING` and an empty cell are accepted as undecided too, for rows created
-before this was settled. The gates in `nodes/review-page.js` and
-`nodes/commit.js` both uppercase before comparing and must stay identical
-— when they disagree, one of them locks out every request.
+`status` records **where the request is**, not what the artist chose:
+
+| Value | Meaning | Written by |
+|---|---|---|
+| `NEW` | appended, nobody has looked at it | A6 `Append row` |
+| `LINK SENT` | priced; client has the estimate and booking link | C8 `Update row` |
+| `DECLINED` | artist turned it down | C8 `Update row` |
+| `BOOKED` | client actually booked | *nothing yet — see below* |
+
+Which tier was sent lives in its own **`tierSent`** column (`tier1`…`tier5`,
+blank on a decline). Keeping it out of `status` means "everything waiting on a
+client" is one filter rather than five, and adding a sixth tier doesn't change
+what a status filter has to match.
+
+`BOOKED` is not written by any current workflow. Workflow C ends at
+`LINK SENT`; something watching Acuity has to move it on. Both gates already
+treat `BOOKED` as decided, so that can be added without touching them.
+
+`PENDING` and an empty cell count as undecided too, for rows created before
+this was settled. The gates in `nodes/review-page.js` and `nodes/commit.js`
+both uppercase before comparing and share the same `OPEN_STATUSES` list — when
+the two disagree, one of them locks out every request.
 
 ---
 
@@ -51,7 +67,7 @@ edit the values there instead. Nothing else in the node changes.
 One sheet, row 1 = headers, exactly these names:
 
 ```
-rid  status  decidedAt  estimate  artistNote
+rid  status  tierSent  decidedAt  estimate  artistNote
 artistKey  artistName  artistEmail
 firstName  lastName  email  phone  firstTattoo
 idea  placement  size  style
@@ -148,6 +164,7 @@ return out;
 |---|---|
 | rid | `={{ $('Intake').first().json.rid }}` |
 | status | `NEW` |
+| tierSent | *(leave blank)* |
 | decidedAt | *(leave blank)* |
 | estimate | *(leave blank)* |
 | artistNote | *(leave blank)* |
@@ -275,7 +292,8 @@ too, but hold the same value on both sides.
 | Column | Value |
 |---|---|
 | rid *(match on this)* | `={{ $json.rid }}` |
-| status | `={{ $json.status }}` |
+| status | `={{ $json.status }}` → `LINK SENT` or `DECLINED` |
+| tierSent | `={{ $json.tierSent }}` → `tier1`…`tier5`, blank on a decline |
 | decidedAt | `={{ $json.decidedAt }}` |
 | estimate | `={{ $json.estimate }}` |
 | artistNote | `={{ $json.artistNote }}` |
@@ -321,7 +339,8 @@ You still have to write this template — it does not exist in the repo yet.
 | 1 | Submit the form with 2 reference images | New row, `status = NEW`, folder in Drive, artist email with 2 attachments |
 | 2 | Tap a tier button in that email | Review page renders **the form**, no row change |
 | 3 | Reload the review page | Still renders, still no row change |
-| 4 | Edit the estimate on the page, then press the button | Client email arrives **carrying the edited estimate**, `status = tier3`, confirmation page |
+| 4 | Edit the estimate on the page, then press the button | Client email arrives **carrying the edited estimate**, `status = LINK SENT` and `tierSent = tier3`, confirmation page |
+| 4b | Press Decline on a different request | `status = DECLINED`, `tierSent` blank, no booking link in the email |
 | 5 | Tap a *different* button from the original email | "Already handled" page, no second email |
 | 6 | Edit `sig` in a URL by one character | 403 page |
 | 7 | Delete `&sig=…` from a URL entirely | 403 page — **not** the review page |
