@@ -211,8 +211,17 @@ images don't append multiple rows.
 | B3 | **If** | `Valid?` | Condition: Boolean → `={{ $json.valid }}` → **is true** |
 | B4 | **Google Sheets** | `Lookup rid` | Operation `Get Row(s)` · Filter: Column `rid` = `={{ $json.rid }}` · Options → Return First Match |
 | B5 | **Code** | `Review page` | Mode **Run Once for All Items** · paste `nodes/review-page.js` |
-| B6 | **Respond to Webhook** | `Respond page` | Respond With **Text** · Body `={{ $json.html }}` · Header `Content-Type: text/html; charset=utf-8` |
-| B7 | **Respond to Webhook** | `Respond 403` | Respond With **Text** · Code **403** · Body: HTML below · same Content-Type header |
+| B6 | **Respond to Webhook** | `Respond page` | Respond With **Text** · Body `={{ $json.html }}` · Headers: `Content-Type: text/html; charset=utf-8` **and `Cache-Control: no-store, must-revalidate`** |
+| B7 | **Respond to Webhook** | `Respond 403` | Respond With **Text** · Code **403** · Body: HTML below · same two headers |
+
+⚠ **`Cache-Control: no-store` on every decision response is not optional.**
+The review page is a snapshot of a row that changes underneath it. Without it,
+a browser, a back-button press, or a corporate link-rewriter can re-serve the
+decision form for a request that has already been decided — the artist sees a
+live-looking form and n8n is never asked, so no status check runs. The commit
+gate in Workflow C still catches the submission and nothing is sent, but the
+artist has been shown a form that was never going to work. `nginx.conf` sets
+the same header on `index.html` for the same reason.
 
 ### B — wiring
 
@@ -221,11 +230,24 @@ B1 ──▶ B2 ──▶ B3 ┬─ true ──▶ B4 ──▶ B5 ──▶ B6
                  └─ false ─▶ B7
 ```
 
-### B7 — body
+### B7 / C12 — the 403 body
+
+Paste `templates/respond-403.html` into both. It is **static** — no
+expressions, nothing to adapt — so the same content goes in each node.
+
+It deliberately does not say *which* check failed. A bad signature, an expired
+link and an already-decided request all render the same page: distinguishing
+them tells anyone probing `rid` values which ones are real.
+
+If you want the minimal version instead of the styled page, this one-liner is
+equivalent in function:
 
 ```html
-={{ '<!doctype html><meta charset="utf-8"><body style="background:#080808;color:#f7f7f7;font-family:Arial,sans-serif;padding:44px 22px;text-align:center"><p>' + ($json.reason === 'expired' ? 'This link has expired.' : 'This link is not valid.') + '</p></body>' }}
+={{ '<!doctype html><meta charset="utf-8"><body style="background:#080808;color:#f7f7f7;font-family:Arial,sans-serif;padding:44px 22px;text-align:center"><p>This link is no longer active.</p></body>' }}
 ```
+
+Note it no longer branches on `$json.reason` — the earlier version leaked
+"expired" versus "not valid" for exactly the reason above.
 
 ---
 
@@ -247,20 +269,26 @@ node joins them before `Commit`. That is why no Code file here calls
 | C6 | **Code** ⚠ | `Commit` | Name is read by C10's expression · Mode **Run Once for All Items** · paste `nodes/commit.js` |
 | C7 | **If** | `Send email?` | `={{ $json.sendEmail }}` is true |
 | C8 | **Google Sheets** | `Update row` | Operation `Update` · Matching column `rid` · fields below |
-| C9 | **Send Email** | `Email Client` | fields below |
-| C10 | **Respond to Webhook** | `Respond done` | Respond With **Text** · Body `={{ $('Commit').first().json.html }}` · Content-Type header |
+| C9 | **If** | `Decline?` | `={{ $('Commit').first().json.isDecline }}` is true |
+| C9a | **Send Email** | `Email client — decline` | C9 **true** branch · paste `templates/client-email-decline.html` · fields below |
+| C9b | **Send Email** | `Email client — booking` | C9 **false** branch · paste `templates/client-email-booking.html` · fields below |
+| C10 | **Respond to Webhook** | `Respond done` | Respond With **Text** · Body `={{ $('Commit').first().json.html }}` · Content-Type **and `Cache-Control: no-store, must-revalidate`** |
 | C11 | **Respond to Webhook** | `Respond already` | same, body `={{ $json.html }}` (the "already handled" page from C6) |
 | C12 | **Respond to Webhook** | `Respond 403` | same as B7 |
 
 ### C — wiring
 
 ```
-                          ┌──────────────────────▶ ▸1 ┐
-C1 ──▶ C2 ──▶ C3 ┬─ true ─┤                           C5 ──▶ C6 ──▶ C7 ┬─ true ──▶ C8 ──▶ C9 ──▶ C10
-                 │        └─▶ C4 Lookup Rid ─────▶ ▸2 ┘  Merge          └─ false ─▶ C11
-                 │
+                          ┌──────────────────────▶ ▸1 ┐                              ┌─ true ──▶ C9a decline ─┐
+C1 ──▶ C2 ──▶ C3 ┬─ true ─┤                           C5 ──▶ C6 ──▶ C7 ┬─ true ─▶ C8 ─▶ C9 ┤                        ├─▶ C10
+                 │        └─▶ C4 Lookup Rid ─────▶ ▸2 ┘  Merge         │            └─ false ─▶ C9b booking ─┘
+                 │                                                      └─ false ─▶ C11
                  └─ false ─▶ C12
 ```
+
+Both C9a and C9b feed C10, so the artist gets the same confirmation page
+either way — the page itself already says "Declined" or "Sent" based on what
+`Commit` decided.
 
 ⚠ **C3's true output feeds two nodes.** One edge goes straight to Merge input
 1, the other goes through `Lookup Rid` into input 2. Miss the direct edge and
@@ -298,17 +326,31 @@ too, but hold the same value on both sides.
 | estimate | `={{ $json.estimate }}` |
 | artistNote | `={{ $json.artistNote }}` |
 
-### C9 — Send Email fields
+### C9a / C9b — Send Email fields
+
+Identical on both nodes except the HTML body:
 
 | Field | Value |
 |---|---|
+| From | your sending address |
 | To | `={{ $('Commit').first().json.to }}` |
-| Reply To | `={{ $('Commit').first().json.replyTo }}` |
+| Reply To | `={{ $('Commit').first().json.replyTo }}` ← the artist, so the client's reply reaches them |
 | Subject | `={{ $('Commit').first().json.subject }}` |
 | Email Format | HTML |
-| HTML | your client-facing template — branch on `{{ $('Commit').first().json.isDecline }}`, use `bookingUrl`, `firstName`, `artistName`, `estimate`, `artistNote` |
+| HTML (C9a) | contents of `templates/client-email-decline.html` |
+| HTML (C9b) | contents of `templates/client-email-booking.html` |
 
-You still have to write this template — it does not exist in the repo yet.
+`Commit` already computes the right subject line for each path, so both nodes
+use the same expression.
+
+Every value in these templates is addressed as `$('Commit').first().json.X`
+rather than `$json`. That is deliberate — these nodes hang off `Update row`,
+so `$json` there is the Google Sheets response, not the decision.
+
+Both templates hide the artist's note when it's blank, so an unwritten note
+leaves no empty bordered box behind. The decline template has no button and no
+estimate: `bookingUrl` is empty on that path, and rendering a button that goes
+nowhere is worse than rendering none.
 
 ---
 

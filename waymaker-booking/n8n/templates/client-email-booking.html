@@ -1,0 +1,122 @@
+<!--
+  n8n → Workflow C → C9a "Email client — booking" node
+  Email Format: HTML
+
+    To        ={{ $('Commit').first().json.to }}
+    Reply To  ={{ $('Commit').first().json.replyTo }}      ← the artist
+    Subject   ={{ $('Commit').first().json.subject }}
+
+  Sent when the artist priced the request. The decline path is a separate
+  template (client-email-decline.html) behind an IF on
+  {{ $('Commit').first().json.isDecline }} — the two messages differ enough
+  that branching inside one template made it unreadable.
+
+  Every value comes from the Commit node by name rather than $json, because
+  this node hangs off the Sheets update and $json is the sheet row there.
+
+  Table layout and inline styles throughout: Gmail strips <style> blocks, and
+  Outlook ignores most modern CSS.
+-->
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:0 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;">
+
+        <!-- Header -->
+        <tr>
+          <td align="center" style="padding:36px 0 30px;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;letter-spacing:5px;color:#f7f7f7;text-transform:uppercase;">WayMaker Ink</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 8px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Your Estimate</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 22px;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:27px;line-height:1.25;color:#f7f7f7;">
+              Hi {{ $('Commit').first().json.firstName }} — {{ $('Commit').first().json.artistName }} has reviewed your idea.
+            </div>
+          </td>
+        </tr>
+
+        <!-- The estimate. The artist may have edited this on the review page,
+             so it is text rather than a recomputed tier price. -->
+        <tr>
+          <td style="padding:0 0 24px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+              <tr>
+                <td style="padding:22px 24px;">
+                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a8a8a;padding-bottom:8px;">Estimated Session</div>
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;color:#f5c684;">{{ $('Commit').first().json.estimate }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Personal note. The whole row disappears when the artist left it
+             blank — an empty bordered box reads as a mistake. -->
+        {{ $('Commit').first().json.artistNote ? '<tr><td style="padding:0 0 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:0 0 8px;"><div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a8a8a;">A Note From ' + $('Commit').first().json.artistName + '</div></td></tr><tr><td style="border-left:2px solid #f5c684;padding:2px 0 2px 16px;"><div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#d8d4cd;">' + $('Commit').first().json.artistNote + '</div></td></tr></table></td></tr>' : '' }}
+
+        <!-- Booking button -->
+        <tr>
+          <td style="padding:6px 0 14px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" bgcolor="#f5c684" style="background-color:#f5c684;">
+                  <a href="{{ $('Commit').first().json.bookingUrl }}"
+                     style="display:block;padding:17px 8px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#080808;text-decoration:none;">
+                    Book Your Appointment
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0 0 30px;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#8a8a8a;">
+              The link opens {{ $('Commit').first().json.artistName }}'s calendar with the right session length already selected. Pick any time that works for you.
+            </div>
+          </td>
+        </tr>
+
+        <!-- What happens next -->
+        <tr>
+          <td style="padding:0 0 30px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #1f1f1f;">
+              <tr>
+                <td style="padding:22px 0 0;">
+                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a8a8a;padding-bottom:12px;">What Happens Next</div>
+                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#d8d4cd;">
+                    The estimate covers the time booked, not a fixed price for the finished piece — larger work sometimes needs a second session, and {{ $('Commit').first().json.artistName }} will tell you before any extra time is booked.
+                    <br /><br />
+                    Questions, or want to change something about the design? Just reply to this email — it goes straight to {{ $('Commit').first().json.artistName }}.
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:0 0 44px;border-top:1px solid #1f1f1f;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#666666;padding-top:18px;">
+              WayMaker Ink &nbsp;·&nbsp; Request {{ $('Commit').first().json.rid }}
+              <br />
+              You're receiving this because you submitted an appointment request.
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
