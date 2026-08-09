@@ -107,16 +107,25 @@ fallback and the shape reference; production values come from the environment.
    while the n8n editor is open, so the form works once and then silently stops.
    `WM_ARTISTS` is optional; without it `app.js` uses its built-in defaults.
    (`WEBHOOK_URL` is still accepted as the old name for the first variable.)
-5. **Domain:** `book.waymakerink.com` → enable HTTPS (Let's Encrypt).
-6. Point a `CNAME` for `book` at the Dokploy host.
+5. **Domain:** `booking.waymakerink.com` → enable HTTPS (Let's Encrypt).
+6. Point an `A` record for `booking` at the Dokploy host — the same IP your n8n
+   instance resolves to, if both run on the one VPS.
+
+⚠ **Create the DNS record before adding the domain in Dokploy.** If the
+hostname doesn't resolve yet you get `queryA ENOTFOUND booking.waymakerink.com`,
+and the failure outlives the fix: resolvers cache the negative answer (this
+zone's SOA gives it a 300s TTL), so a retry inside that window fails again with
+a record that is already correct. Let's Encrypt also rate-limits failed
+validations at roughly 5 per hostname per hour — worth not burning them on a
+DNS problem.
 
 Health check is at `/healthz`.
 
 ## CORS
 
-The form POSTs cross-origin (`book.waymakerink.com` → n8n host), so the n8n
+The form POSTs cross-origin (`booking.waymakerink.com` → n8n host), so the n8n
 Webhook node must return CORS headers. In the node's options set **Allowed
-Origins** to `https://book.waymakerink.com`.
+Origins** to `https://booking.waymakerink.com`.
 
 Without this the `fetch()` fails silently while a plain form POST still works —
 which makes it look like a JS bug rather than a CORS one. If submits fail with
