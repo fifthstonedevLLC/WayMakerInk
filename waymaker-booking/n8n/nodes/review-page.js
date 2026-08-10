@@ -17,7 +17,28 @@
      Response Headers: Content-Type = text/html; charset=utf-8
    ========================================================================== */
 
-const BASE = 'https://n8n.fifthstonedev.com';
+/* Same config helper as nodes/intake.js and nodes/verify-link.js. This node
+   must resolve the base URL the same way intake.js does — intake builds the
+   decision links, this page posts the decision back, and if the two disagree
+   about the host the form posts somewhere the request never came from. */
+const FALLBACK = {
+  WM_N8N_BASE_URL: 'https://n8n.fifthstonedev.com'
+};
+
+function cfg(name) {
+  let fromEnv;
+  try {
+    fromEnv = typeof $env !== 'undefined' && $env ? $env[name] : undefined;
+  } catch (e) {
+    fromEnv = undefined;              /* env access blocked by n8n config */
+  }
+  const value = String(fromEnv || FALLBACK[name] || '').trim();
+  if (!value) throw new Error(`Missing config "${name}" — set it in the environment or in FALLBACK.`);
+  return value;
+}
+
+/* No trailing slash, so `${BASE}/webhook/...` can't produce a double slash. */
+const BASE = cfg('WM_N8N_BASE_URL').replace(/\/+$/, '');
 
 const TIERS = {
   tier1: { label: '1 hr',           price: 125 },
