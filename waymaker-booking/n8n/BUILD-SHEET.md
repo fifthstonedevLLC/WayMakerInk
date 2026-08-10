@@ -272,7 +272,7 @@ node joins them before `Commit`. That is why no Code file here calls
 | C9 | **If** | `Decline?` | `={{ $('Commit').first().json.isDecline }}` is true |
 | C9a | **Send Email** | `Email client — decline` | C9 **true** branch · paste `templates/client-email-decline.html` · fields below |
 | C9b | **Send Email** | `Email client — booking` | C9 **false** branch · paste `templates/client-email-booking.html` · fields below |
-| C10 | **Respond to Webhook** | `Respond done` | Respond With **Text** · Body `={{ $('Commit').first().json.html }}` · Content-Type **and `Cache-Control: no-store, must-revalidate`** |
+| C10 | **Respond to Webhook** | `Respond done` | Respond With **Text** · Body: paste `templates/respond-done.html` · Content-Type **and `Cache-Control: no-store, must-revalidate`** |
 | C11 | **Respond to Webhook** | `Respond already` | same, body `={{ $json.html }}` (the "already handled" page from C6) |
 | C12 | **Respond to Webhook** | `Respond 403` | same as B7 |
 
