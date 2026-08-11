@@ -404,6 +404,30 @@ button, input, textarea, select { font: inherit; }
 .wm-button[disabled] { opacity: 0.5; cursor: not-allowed; }
 .wm-button[disabled]:hover { background: transparent; color: var(--accent); }
 
+/* Available to assistive tech, invisible on screen. */
+.wm-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Auto-return block on the confirmation view. */
+.wm-redirect {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--surface-2);
+}
+.wm-redirect-note { margin: 0 0 16px; }
+.wm-redirect-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.wm-redirect-actions .wm-button { text-decoration: none; }
+/* Secondary of the pair — the accent belongs on leaving, not on staying. */
+.wm-button-quiet { border-color: var(--border-2); color: var(--text); }
+.wm-button-quiet:hover { background: var(--surface-2); color: var(--text); }
+
 .wm-progress {
   height: 2px;
   background: #1f1f1f;
@@ -446,6 +470,7 @@ button, input, textarea, select { font: inherit; }
   .wm-header, .wm-footer { padding-left: 18px; padding-right: 18px; }
   .wm-actions { flex-direction: column; align-items: stretch; }
   .wm-actions .wm-button { width: 100%; }
+  .wm-redirect-actions { flex-direction: column; align-items: stretch; }
   .wm-note-wide { max-width: none; order: 2; }
 }
 

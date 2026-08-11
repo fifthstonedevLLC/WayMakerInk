@@ -149,6 +149,31 @@ works.
   `.replace(/[^0-9+]/g,'')` stripping the formatting the form lets clients type,
   so the artist can call straight from the email on a phone.
 
+## Auto-return from the confirmation
+
+After a successful submit, the confirmation view counts down and then sends the
+client to `WM_HOME_URL` (default `waymakerink.com`) after `WM_REDIRECT_SECONDS`
+(default 20).
+
+The countdown is visible and cancellable rather than silent. That is a
+requirement, not a courtesy: WCAG 2.2 SC 2.2.1 (Timing Adjustable) says a time
+limit has to be switch-off-able, and the confirmation is the one screen telling
+the client what happens next — pulling it away mid-sentence is the worst moment
+to do it. **Stay On This Page** cancels; **Go To WayMaker Ink** leaves early.
+
+The ticking line is `aria-hidden`, with a separate static sentence for screen
+readers. A live region that re-announces every second is unusable, so those
+users get the fact once plus two buttons that say the same thing without a
+clock.
+
+The jump uses `location.replace()`, not `assign()`. The confirmation lives at
+the form's own URL, so an extra history entry would send Back to a blank form
+that looks like the submission vanished.
+
+Set `WM_REDIRECT_SECONDS=0` to turn the whole thing off — the block never
+renders. A value the entrypoint can't parse also leaves people where they are,
+since staying put is the safe failure.
+
 ## Referral tracking
 
 `heardFrom` is a required select on the form; `referredBy` is an optional text

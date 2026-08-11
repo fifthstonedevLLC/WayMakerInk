@@ -210,6 +210,28 @@
             <p class="wm-done-body" data-done-body></p>
             <p class="wm-note">If you don't hear from us within a few days, check your spam folder before reaching out.</p>
           </section>
+
+          <!-- Auto-return to the main site. Visible and cancellable on purpose:
+               WCAG 2.2 SC 2.2.1 (Timing Adjustable) requires a way to turn off a
+               time limit, and pulling the page away while someone is still
+               reading what happens next is the worst possible moment for it.
+
+               The ticking sentence is aria-hidden and the static one is not:
+               a live region that re-announces every second is unusable with a
+               screen reader, so those users get the fact once and the two
+               buttons, which say the same thing without a clock.
+
+               Stays hidden unless app.js starts a timer, so setting
+               WM_REDIRECT_SECONDS=0 removes the whole block rather than
+               leaving a dead countdown on the page. -->
+          <section class="wm-redirect" data-redirect hidden>
+            <p class="wm-note wm-redirect-note" data-redirect-note aria-hidden="true"></p>
+            <p class="wm-sr-only" data-redirect-sr></p>
+            <div class="wm-redirect-actions">
+              <a class="wm-button" data-redirect-now>Go To WayMaker Ink</a>
+              <button type="button" class="wm-button wm-button-quiet" data-redirect-cancel>Stay On This Page</button>
+            </div>
+          </section>
         </div>
 
       </div>

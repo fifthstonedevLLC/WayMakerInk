@@ -129,10 +129,20 @@ container start and written into `public/config.js`:
 |---|---|
 | `WM_WEBHOOK_URL` | `https://n8n.fifthstonedev.com/webhook/booking-request` — **`/webhook/`, not `/webhook-test/`** |
 | `WM_ARTISTS` | JSON: `{"nic":{"enabled":true,"name":"Nic Sinnwell"},"laynie":{"enabled":false,"name":"Laynie Flugum"}}` |
+| `WM_HOME_URL` | optional — where the confirmation page returns to. Defaults to `https://waymakerink.com` |
+| `WM_REDIRECT_SECONDS` | optional — how long the client gets to read the confirmation first. Defaults to `20`; **`0` switches the auto-return off** |
 
 Enabling an artist is an edit to `WM_ARTISTS` — no code change, no redeploy of
 the image. Artist *emails* are deliberately absent: this file is public, and
 the intake workflow resolves the artist from its own server-side map anyway.
+
+`docker-entrypoint.sh` validates all four before writing `config.js`, because
+anything malformed there is a syntax error that takes the whole form down, not
+just the setting it came from. A `WM_HOME_URL` containing a quote or using a
+non-`http(s)` scheme is dropped with a warning — the value lands in an `href`,
+so `javascript:` is refused rather than rendered. `WM_REDIRECT_SECONDS` must be
+digits only. Anything rejected falls back to the app's default, and the
+container logs which values it used on boot.
 
 ### 0.4 Credentials to create in n8n
 

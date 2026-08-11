@@ -80,6 +80,24 @@
   var REFERRAL_SOURCES = ['Friend or family', 'A previous client', 'Another artist or shop'];
   var OTHER_SOURCE = 'Other';
 
+  /* Where the confirmation view sends people once they've had time to read it,
+     and how long that is. Both come from the environment via config.js so the
+     wait can be tuned, or the redirect switched off with 0, without a deploy.
+
+     20s is the read-then-leave budget for the confirmation copy — long enough
+     to finish it twice, short enough that an abandoned tab doesn't sit on a
+     dead end. Anyone who wants longer presses Stay On This Page; anyone who
+     wants sooner presses the other button.
+
+     null counts as "not set" as well as undefined: docker-entrypoint.sh writes
+     `redirectSeconds: null` when the env var is absent, the same way it does
+     for artists, and Number(null) is 0 — which would read as "never redirect"
+     when what was meant is "no preference". */
+  var HOME_URL = CFG.homeUrl || 'https://waymakerink.com';
+  var REDIRECT_SECONDS = (CFG.redirectSeconds === undefined || CFG.redirectSeconds === null)
+    ? 20
+    : Number(CFG.redirectSeconds);
+
   var MAX_FILES = 5;
   var MAX_EDGE = 1600;      // px on the long edge
   var JPEG_QUALITY = 0.82;
@@ -234,6 +252,11 @@
       refsInput: form.querySelector('[data-refs-input]'),
       refsGrid: form.querySelector('[data-refs-grid]'),
       refsHint: form.querySelector('[data-refs-hint]'),
+      redirect: document.querySelector('[data-redirect]'),
+      redirectNote: document.querySelector('[data-redirect-note]'),
+      redirectSr: document.querySelector('[data-redirect-sr]'),
+      redirectNow: document.querySelector('[data-redirect-now]'),
+      redirectCancel: document.querySelector('[data-redirect-cancel]'),
       heardFrom: form.querySelector('[data-heard-from]'),
       referralField: form.querySelector('[data-referral-field]'),
       referredBy: form.querySelector('[data-referred-by]'),
@@ -601,5 +624,75 @@
       'with a time estimate, a price, and a link to book.';
     show('done');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    startRedirect();
+  }
+
+  /* ------------------------------------------------------- auto-return home */
+
+  var redirectTimer = null;
+
+  function hostOf(url) {
+    /* Shown to the client, so "waymakerink.com" rather than the full URL.
+       URL() is unavailable in a few older mobile browsers this form still
+       loads in, hence the fallback rather than a bare constructor call. */
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch (e) {
+      return String(url).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    }
+  }
+
+  function startRedirect() {
+    var remaining = REDIRECT_SECONDS;
+    var host = hostOf(HOME_URL);
+
+    els.redirectNow.href = HOME_URL;
+
+    /* A non-finite or non-positive value means "don't". Covers
+       WM_REDIRECT_SECONDS=0 as an explicit off switch, and also a typo'd value
+       that arrives as NaN — leaving people on the confirmation is the safe
+       failure, so it is what an unreadable setting gets. */
+    if (!isFinite(remaining) || remaining <= 0) return;
+
+    els.redirect.hidden = false;
+
+    /* Announced once. The visible line below re-renders every second, which is
+       why it is aria-hidden — a screen reader reciting a countdown drowns out
+       everything else on the page. */
+    els.redirectSr.textContent =
+      'This page will return to ' + host + ' automatically. ' +
+      'Use the Stay On This Page button to remain here.';
+
+    els.redirectCancel.addEventListener('click', stopRedirect);
+    /* Leaving early should not leave a timer running behind the click. */
+    els.redirectNow.addEventListener('click', stopRedirect);
+
+    render();
+    redirectTimer = window.setInterval(function () {
+      remaining -= 1;
+      if (remaining <= 0) {
+        stopRedirect();
+        /* replace() rather than assign(): the confirmation lives at the form's
+           own URL, so a history entry would send Back to a blank form that
+           looks like the submission was lost. */
+        window.location.replace(HOME_URL);
+        return;
+      }
+      render();
+    }, 1000);
+
+    function render() {
+      els.redirectNote.textContent =
+        'Returning to ' + host + ' in ' + remaining + ' second' + (remaining === 1 ? '' : 's') + '.';
+    }
+  }
+
+  function stopRedirect() {
+    if (redirectTimer === null) return;
+    window.clearInterval(redirectTimer);
+    redirectTimer = null;
+    els.redirectNote.textContent = '';
+    els.redirectSr.textContent = '';
+    els.redirectCancel.hidden = true;   /* nothing left to cancel */
   }
 })();
