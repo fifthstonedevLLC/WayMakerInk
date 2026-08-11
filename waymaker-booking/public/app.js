@@ -67,6 +67,19 @@
     (CFG.artists && Object.keys(CFG.artists).length) ? CFG.artists : DEFAULT_ARTISTS
   );
 
+  /* Referral tracking. These are the `heardFrom` values that name a *person*,
+     and picking one reveals the "who can we thank" input. Keep them character
+     for character in sync with the <option value> attributes in index.html —
+     the match is exact, and a typo here silently stops the name field from
+     ever appearing.
+
+     The artist's question is "who is sending us the most people", which a
+     count of `heardFrom` cannot answer on its own: fifty rows reading
+     "Friend or family" prove referrals work and name nobody. The follow-up
+     field is the part that earns its place. */
+  var REFERRAL_SOURCES = ['Friend or family', 'A previous client', 'Another artist or shop'];
+  var OTHER_SOURCE = 'Other';
+
   var MAX_FILES = 5;
   var MAX_EDGE = 1600;      // px on the long edge
   var JPEG_QUALITY = 0.82;
@@ -221,6 +234,11 @@
       refsInput: form.querySelector('[data-refs-input]'),
       refsGrid: form.querySelector('[data-refs-grid]'),
       refsHint: form.querySelector('[data-refs-hint]'),
+      heardFrom: form.querySelector('[data-heard-from]'),
+      referralField: form.querySelector('[data-referral-field]'),
+      referredBy: form.querySelector('[data-referred-by]'),
+      referralLabel: form.querySelector('[data-referral-label]'),
+      referralNote: form.querySelector('[data-referral-note]'),
       headline: document.querySelector('[data-headline]'),
       doneBody: document.querySelector('[data-done-body]')
     };
@@ -246,10 +264,56 @@
     form.setAttribute('enctype', 'multipart/form-data');
 
     bindUploads();
+    bindReferral();
     bindValidation();
     form.addEventListener('submit', onSubmit);
 
     show('form');
+  }
+
+  /* -------------------------------------------------------------- referral */
+
+  /* What the referral input last meant: 'person', 'other', or 'none'. */
+  var referralMode = 'none';
+
+  function bindReferral() {
+    els.heardFrom.addEventListener('change', syncReferral);
+    syncReferral();   /* also covers a browser restoring a value on reload */
+  }
+
+  function syncReferral() {
+    var value = els.heardFrom.value;
+    var isPerson = REFERRAL_SOURCES.indexOf(value) !== -1;
+    var mode = isPerson ? 'person' : (value === OTHER_SOURCE ? 'other' : 'none');
+
+    /* Clear whenever the box stops meaning what it meant, which is a wider net
+       than "whenever it hides":
+
+         person → none    someone types "Marisol", switches to Instagram. The
+                          input is out of sight but still inside the <form>, so
+                          FormData files that name against an Instagram row.
+         other  → person  "heard it on a podcast" stays on screen and becomes
+                          the answer to "who can we thank" — a sentence lands in
+                          the referral column and shows up in the leaderboard as
+                          a person who does not exist.
+
+       person → person is deliberately kept: same name, different relationship,
+       and retyping it would just be rude. */
+    if (mode !== referralMode && !(mode === 'person' && referralMode === 'person')) {
+      els.referredBy.value = '';
+      mark(els.referredBy, false);
+    }
+    referralMode = mode;
+
+    els.referralField.hidden = mode === 'none';
+    if (els.referralField.hidden) return;
+
+    /* One input, two jobs — heardFrom is what tells them apart downstream. */
+    els.referralLabel.textContent = isPerson ? 'Who Can We Thank?' : 'Where Did You Find Us?';
+    els.referredBy.placeholder = isPerson ? 'Their name' : 'Podcast, magazine, someone’s recommendation…';
+    els.referralNote.textContent = isPerson
+      ? 'Optional, but it’s how we thank the people who send folks our way.'
+      : 'Optional — it helps us know where to show up next.';
   }
 
   /* --------------------------------------------------------------- uploads */
@@ -383,7 +447,8 @@
     ['email', 'email address'],
     ['idea', 'description of your idea'],
     ['placement', 'placement'],
-    ['size', 'approximate size']
+    ['size', 'approximate size'],
+    ['heard-from', 'how you heard about us']
   ];
 
   function mark(el, on) {

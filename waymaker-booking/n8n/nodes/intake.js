@@ -145,6 +145,15 @@ for (const item of items) {
       email: String(payload.email || '').trim(),
       phone: String(payload.phone || '').trim(),
       firstTattoo: payload.firstTattoo || 'No',
+      /* Referral tracking. 'Not given' rather than '' so a blank cell in the
+         sheet means "this row predates the field", not "they declined to say" —
+         the two need telling apart when the artist counts sources. */
+      heardFrom: String(payload.heardFrom || '').trim() || 'Not given',
+      /* Only meaningful alongside heardFrom: a person's name when the source
+         was a referral, a free-text description when it was "Other". Interior
+         whitespace is collapsed so "Jane  Doe" and "Jane Doe" land in the same
+         bucket — COUNTIF already ignores case, but not double spaces. */
+      referredBy: String(payload.referredBy || '').replace(/\s+/g, ' ').trim(),
       idea: String(payload.idea || '').trim(),
       placement: String(payload.placement || '').trim(),
       size: String(payload.size || '').trim(),

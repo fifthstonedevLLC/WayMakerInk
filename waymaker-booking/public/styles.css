@@ -134,6 +134,9 @@ button, input, textarea, select { font: inherit; }
 }
 
 .wm-field { display: grid; gap: 8px; margin-bottom: 16px; }
+/* display:grid above outranks the [hidden] attribute's UA display:none, so a
+   conditionally-revealed field (the referral name) needs this to stay hidden. */
+.wm-field[hidden] { display: none; }
 .wm-field label {
   font-size: 0.74rem;
   letter-spacing: 0.2rem;

@@ -140,10 +140,60 @@ works.
 - The `body.budget` and `body.timing` rows have no matching form fields —
   delete them or add the inputs to `public/index.html`.
 - Field references lose the `body.` prefix: `{{ $json.firstName }}` etc.
-- `PASTE_BOOKING_REQUESTS_FOLDER_ID` → the per-request Drive folder from the
-  upload node, not the root folder.
+- The references button already resolves the per-request Drive folder via
+  `$('Create folder').first().json.id`. It needs A3 wired off A2 *before* A7 —
+  see the wiring warning in `BUILD-SHEET.md`.
 - Add the artist's name somewhere visible, and give `toLocaleString` an
   explicit `timeZone` so it doesn't format in the server's zone.
+- ~~The phone number is dead text~~ — **done.** It's a `tel:` link now, with
+  `.replace(/[^0-9+]/g,'')` stripping the formatting the form lets clients type,
+  so the artist can call straight from the email on a phone.
+
+## Referral tracking
+
+`heardFrom` is a required select on the form; `referredBy` is an optional text
+input that only appears once the chosen source implies a person. That split is
+the whole design — a count of `heardFrom` proves referrals are working but
+names nobody, and naming people is the point.
+
+The three sources that reveal the name field are listed in `REFERRAL_SOURCES`
+in `public/app.js` and must match the `<option value>` strings in
+`public/index.html` character for character; a mismatch fails silently, with the
+name field simply never appearing. `Other` reveals the same input with different
+copy, so `referredBy` holds a description rather than a name on those rows —
+filter on `heardFrom` before counting. BUILD-SHEET §0.2a has the leaderboard
+query.
+
+`app.js` blanks `referredBy` whenever the field is hidden. Without that, a
+client who types a name and then changes the source leaves the name inside the
+`<form>`, and `FormData` files it against a row that says Instagram.
+
+Adding or renaming a source is two edits — the `<option>` in `index.html`, and
+`REFERRAL_SOURCES` if it names a person. Nothing downstream enumerates the
+values: `intake.js` passes the string through and the sheet stores it as text.
+
+## Email rendering
+
+All three email templates (`request-email.html`, `client-email-booking.html`,
+`client-email-decline.html`) are **complete HTML documents** — paste them whole,
+doctype and `<head>` included. BUILD-SHEET's C9a/C9b section explains what
+breaks when the head is dropped.
+
+They read as one design: `#080808` page, `#111111` cards, `#f7f7f7` body copy,
+`#a8a29a` for anything secondary, `#f5c684` gold for accents and buttons. The
+muted tone used to be `#666666`, which is 3.5:1 against the page background —
+under the 4.5:1 minimum, and genuinely hard to read on a phone in daylight.
+`#a8a29a` is 7.9:1 and clears the stricter 7:1 bar. If you introduce another
+grey, check it against `#080808` before it ships.
+
+The layout is fluid to a `max-width:600px` rather than locked at 600px. That
+was the actual cause of the white gutter on phones: the content table was wider
+than the background-painted area, so scrolling right ran off the end of the
+design. Outlook desktop, which ignores `max-width`, is held at 600px by the
+`<!--[if mso]-->` ghost table instead.
+
+Type is 16px for body copy and 13–15px for fine print, with buttons at 16px+
+and ~50px tall so they are comfortable tap targets. Nothing sits below 12px.
 
 ## Still open
 

@@ -1,24 +1,98 @@
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
-  <tr>
-    <td align="center" style="padding:0 12px;">
+<!--
+  n8n → Workflow A → A7 "Send Email" node
+  Email Format: HTML
 
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">
+  Paste this whole file, doctype included. n8n sends the HTML body verbatim
+  and does not wrap it, so the <head> is ours to use — which is the only way
+  to get a viewport meta and media queries into the message.
+
+  Three things in the head are load-bearing, not decoration:
+
+    1. viewport — without it mobile Gmail/Apple Mail render at desktop width
+       and scale the whole message down, which is why the text was unreadable.
+    2. color-scheme / supported-color-schemes — Outlook mobile and Gmail's
+       dark mode otherwise "helpfully" invert a dark email, turning these
+       surfaces white while leaving the light text on top of them. Declaring
+       the email as dark-only opts out of that rewrite.
+    3. The .wm-stack media query — the tier buttons sit in a 50/50 table grid
+       that stays intact on clients with no media query support, and goes
+       single-column full-width on a phone.
+
+  Everything still carries inline styles as well: Gmail strips <style> in some
+  contexts and Outlook desktop ignores most of it. The head is an enhancement
+  layer, the inline styles are the floor.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>New Appointment Request</title>
+<style>
+  :root { color-scheme: dark; supported-color-schemes: dark; }
+
+  body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#080808;
+         -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  img { border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; max-width:100%; }
+
+  /* Outlook mobile inverts anyway on some builds and leaves these attributes
+     behind on the wrapper. Re-assert the dark surfaces through them. */
+  [data-ogsc] .wm-bg,   [data-ogsb] .wm-bg   { background-color:#080808 !important; }
+  [data-ogsc] .wm-card, [data-ogsb] .wm-card { background-color:#111111 !important; }
+  [data-ogsc] .wm-text  { color:#f7f7f7 !important; }
+  [data-ogsc] .wm-muted { color:#a8a29a !important; }
+  [data-ogsc] .wm-gold  { color:#f5c684 !important; }
+
+  @media only screen and (max-width:600px) {
+    .wm-pad    { padding-left:20px !important; padding-right:20px !important; }
+    .wm-h1     { font-size:24px !important; }
+    /* Label/value pairs read as two cramped columns at phone width; stack them. */
+    .wm-label  { display:block !important; width:100% !important; padding:10px 0 0 !important; }
+    .wm-value  { display:block !important; width:100% !important; padding:1px 0 10px !important;
+                 border-top:0 !important; }
+    /* Tier buttons: 50/50 grid → one full-width button per row. */
+    .wm-stack  { display:block !important; width:100% !important; padding:0 0 10px !important; }
+    .wm-btn    { font-size:17px !important; padding:16px 8px !important; }
+  }
+</style>
+</head>
+<body class="wm-bg" style="margin:0;padding:0;background-color:#080808;">
+
+<!-- Inbox preview line. Hidden in the message itself; the &#8199;&#65279; run
+     stops clients from padding the preview with the header text that follows. -->
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#080808;">
+  {{ $('Booking Request').item.json.body.firstName || '' }} wants {{ $('Booking Request').item.json.body.size || 'a piece' }} on the {{ $('Booking Request').item.json.body.placement || 'body' }} — price it in one tap.
+  &#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;
+</div>
+
+<table role="presentation" class="wm-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:0;">
+
+      <!--[if mso]>
+      <table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td>
+      <![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;margin:0 auto;">
 
         <!-- header -->
         <tr>
           <td align="center" bgcolor="#666666" style="background-color:#666666;padding:20px 24px;border-bottom:1px solid #999999;">
-            <img src="https://forms.waymakerink.com/WaymakerInk_Logo_transparent.png" width="160" alt="WayMaker Ink" style="display:block;width:160px;height:auto;border:0;">
+            <img src="https://forms.waymakerink.com/WaymakerInk_Logo_transparent.png" width="160" alt="WayMaker Ink" style="display:block;width:160px;max-width:60%;height:auto;border:0;">
           </td>
         </tr>
 
         <!-- title -->
         <tr>
-          <td style="padding:34px 28px 18px;">
-            <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">New Appointment Request</p>
-            <h1 style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;font-weight:normal;color:#f7f7f7;">
+          <td class="wm-pad" style="padding:34px 28px 18px;">
+            <p class="wm-gold" style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">New Appointment Request</p>
+            <h1 class="wm-h1 wm-text" style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;font-weight:normal;color:#f7f7f7;">
               {{ $('Booking Request').item.json.body.firstName || '' }} {{ $('Booking Request').item.json.body.lastName || '' }}
             </h1>
-            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#666666;">
+            <p class="wm-muted" style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#a8a29a;">
               Submitted {{ ($('Booking Request').item.json.body.submittedAt ? new Date($('Booking Request').item.json.body.submittedAt).toLocaleString('en-US',{ dateStyle:'medium', timeStyle:'short' }) : 'Just now') }} &nbsp;·&nbsp; Ref {{ $json.linkRid || $json.requestId || $json.rid || $('Booking Request').item.json.body.rid || $('Booking Request').item.json.rid || $execution.id }}
             </p>
           </td>
@@ -26,35 +100,35 @@
 
         <!-- the piece -->
         <tr>
-          <td style="padding:0 28px 18px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+          <td class="wm-pad" style="padding:0 28px 18px;">
+            <table role="presentation" class="wm-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111111" style="background-color:#111111;border:1px solid #4a4a4a;">
               <tr>
                 <td style="padding:20px 22px;">
-                  <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">The Piece</p>
-                  <p style="margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#f7f7f7;">
+                  <p class="wm-gold" style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">The Piece</p>
+                  <p class="wm-text" style="margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65;color:#f7f7f7;">
                     {{ $('Booking Request').item.json.body.idea }}
                   </p>
 
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td width="34%" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Placement</td>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.placement }}</td>
+                      <td class="wm-label wm-muted" width="34%" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Placement</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.placement }}</td>
                     </tr>
                     <tr>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Size</td>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.size }}</td>
+                      <td class="wm-label wm-muted" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Size</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.size }}</td>
                     </tr>
                     <tr>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Style</td>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.style }}</td>
+                      <td class="wm-label wm-muted" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Style</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.style }}</td>
                     </tr>
                     <tr>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">Artist</td>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.artistName || $('Booking Request').item.json.body.artist || 'Not specified' }}</td>
+                      <td class="wm-label wm-muted" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Artist</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.artistName || $('Booking Request').item.json.body.artist || 'Not specified' }}</td>
                     </tr>
                     <tr>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#666666;border-top:1px solid #1f1f1f;">First tattoo</td>
-                      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;border-top:1px solid #1f1f1f;">{{ $('Booking Request').item.json.body.firstTattoo || 'Not given' }}</td>
+                      <td class="wm-label wm-muted" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">First tattoo</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.firstTattoo || 'Not given' }}</td>
                     </tr>
                   </table>
                 </td>
@@ -65,17 +139,30 @@
 
         <!-- contact -->
         <tr>
-          <td style="padding:0 28px 18px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+          <td class="wm-pad" style="padding:0 28px 18px;">
+            <table role="presentation" class="wm-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111111" style="background-color:#111111;border:1px solid #4a4a4a;">
               <tr>
                 <td style="padding:20px 22px;">
-                  <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Contact</p>
-                  <p style="margin:0 0 5px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
-                    <a href="mailto:{{ $('Booking Request').item.json.body.email || '' }}" style="color:#f5c684;text-decoration:none;">{{ $('Booking Request').item.json.body.email || 'No email provided' }}</a>
+                  <p class="wm-gold" style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Contact</p>
+                  <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#f7f7f7;">
+                    <a href="mailto:{{ $('Booking Request').item.json.body.email || '' }}" class="wm-gold" style="color:#f5c684;text-decoration:none;">{{ $('Booking Request').item.json.body.email || 'No email provided' }}</a>
                   </p>
-                  <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
-                    {{ $('Booking Request').item.json.body.phone || 'No phone given' }}
+                  <p class="wm-text" style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#f7f7f7;">
+                    <a href="tel:{{ ($('Booking Request').item.json.body.phone || '').replace(/[^0-9+]/g,'') }}" class="wm-gold" style="color:#f5c684;text-decoration:none;">{{ $('Booking Request').item.json.body.phone || 'No phone given' }}</a>
                   </p>
+
+                  <!-- Referral tracking. The source is context; the name is the
+                       thing worth acting on, so it is set in gold and only
+                       appears when there is one. The sheet is where the counting
+                       happens — this is just so the artist sees "sent by Marisol"
+                       while they are already reading the request. -->
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+                    <tr>
+                      <td class="wm-label wm-muted" width="34%" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Heard about us</td>
+                      <td class="wm-value wm-text" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#f7f7f7;border-top:1px solid #2a2a2a;">{{ $('Booking Request').item.json.body.heardFrom || 'Not given' }}</td>
+                    </tr>
+                    {{ $('Booking Request').item.json.body.referredBy ? '<tr><td class="wm-label wm-muted" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a8a29a;border-top:1px solid #2a2a2a;">Referred by</td><td class="wm-value" style="padding:9px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#f5c684;border-top:1px solid #2a2a2a;">' + $('Booking Request').item.json.body.referredBy + '</td></tr>' : '' }}
+                  </table>
                 </td>
               </tr>
             </table>
@@ -84,17 +171,37 @@
 
         <!-- references -->
         <tr>
-          <td style="padding:0 28px 22px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0b0b" style="background-color:#0b0b0b;border:1px solid #444444;">
+          <td class="wm-pad" style="padding:0 28px 22px;">
+            <table role="presentation" class="wm-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111111" style="background-color:#111111;border:1px solid #4a4a4a;">
               <tr>
                 <td style="padding:20px 22px;">
-                  <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">References</p>
-                  <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#f7f7f7;">
+                  <p class="wm-gold" style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">References</p>
+                  <p class="wm-text" style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#f7f7f7;">
                     {{ Number($('Booking Request').item.json.body.referenceCount || 0) > 0 ? Number($('Booking Request').item.json.body.referenceCount) + ' image' + (Number($('Booking Request').item.json.body.referenceCount) > 1 ? 's' : '') + ' attached to this request.' : 'No reference images were submitted.' }}
                   </p>
-                  <a href="https://drive.google.com/drive/folders/PASTE_BOOKING_REQUESTS_FOLDER_ID" style="display:inline-block;padding:11px 22px;border:1px solid #999999;color:#f7f7f7;font-family:Arial,Helvetica,sans-serif;font-size:13px;text-decoration:none;">
-                    Open Booking Requests Folder
-                  </a>
+                  <!-- Per-request folder, not the root: 'Create folder' (A4) named it
+                       after the rid, so this drops the artist straight into this
+                       client's images instead of a folder of every request ever.
+
+                       Two things this depends on, both load-bearing:
+
+                       1. A4 must have run before A7. It is on a parallel branch, so
+                          the folder-creation branch has to be the FIRST connection
+                          off A2 and this email node the second — n8n's v1 execution
+                          order runs branches to completion in connection order.
+                          Reversed, the id is not there yet and the node errors.
+
+                       2. Requests with no images fall back to the root Booking
+                          Requests folder. A3 'Split refs' emits one item per image,
+                          so on a request with none it emits zero, A4 never runs, and
+                          reading $('Create folder') would throw and take the whole
+                          artist email with it. The ternary is lazy, so the fallback
+                          branch never touches that node — which is the entire reason
+                          the id is picked first and the anchor built around it.
+
+                       display:block rather than inline-block so the tap target is
+                       the full card width on a phone. -->
+                  {{ '<a href="https://drive.google.com/drive/folders/' + (Number($('Booking Request').item.json.body.referenceCount || 0) > 0 ? $('Create folder').first().json.id : '1skYBp2W8ZLbFdfBDneNQMrMd0WLzQutF') + '" style="display:block;padding:14px 20px;border:1px solid #a8a29a;color:#f7f7f7;font-family:Arial,Helvetica,sans-serif;font-size:15px;text-align:center;text-decoration:none;">' + (Number($('Booking Request').item.json.body.referenceCount || 0) > 0 ? 'Open Reference Folder' : 'Open Booking Requests Folder') + '</a>' }}
                 </td>
               </tr>
             </table>
@@ -103,57 +210,57 @@
 
         <!-- ============ DECISION ============ -->
         <tr>
-          <td style="padding:0 28px 8px;">
-            <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Send Booking Link</p>
-            <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#666666;">
+          <td class="wm-pad" style="padding:0 28px 8px;">
+            <p class="wm-gold" style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Send Booking Link</p>
+            <p class="wm-muted" style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#a8a29a;">
               Tap the session length this piece needs. You'll get a chance to adjust the estimate and add a note before anything sends.
             </p>
           </td>
         </tr>
 
         <tr>
-          <td style="padding:0 28px 10px;">
+          <td class="wm-pad" style="padding:0 28px 10px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="50%" style="padding:0 5px 10px 0;">
-                  <a href="{{ $json.links.tier1 }}"
-                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                <td class="wm-stack" width="50%" style="padding:0 5px 10px 0;">
+                  <a href="{{ $json.links.tier1 }}" class="wm-btn"
+                     style="display:block;padding:16px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-align:center;text-decoration:none;">
                     1 hr &nbsp;·&nbsp; $125
                   </a>
                 </td>
-                <td width="50%" style="padding:0 0 10px 5px;">
-                  <a href="{{ $json.links.tier2 }}"
-                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                <td class="wm-stack" width="50%" style="padding:0 0 10px 5px;">
+                  <a href="{{ $json.links.tier2 }}" class="wm-btn"
+                     style="display:block;padding:16px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-align:center;text-decoration:none;">
                     2 hr &nbsp;·&nbsp; $250
                   </a>
                 </td>
               </tr>
               <tr>
-                <td width="50%" style="padding:0 5px 10px 0;">
-                  <a href="{{ $json.links.tier3 }}"
-                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                <td class="wm-stack" width="50%" style="padding:0 5px 10px 0;">
+                  <a href="{{ $json.links.tier3 }}" class="wm-btn"
+                     style="display:block;padding:16px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-align:center;text-decoration:none;">
                     3 hr &nbsp;·&nbsp; $375
                   </a>
                 </td>
-                <td width="50%" style="padding:0 0 10px 5px;">
-                  <a href="{{ $json.links.tier4 }}"
-                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                <td class="wm-stack" width="50%" style="padding:0 0 10px 5px;">
+                  <a href="{{ $json.links.tier4 }}" class="wm-btn"
+                     style="display:block;padding:16px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-align:center;text-decoration:none;">
                     4 hr &nbsp;·&nbsp; $500
                   </a>
                 </td>
               </tr>
               <tr>
                 <td colspan="2" style="padding:0 0 10px;">
-                  <a href="{{ $json.links.tier5 }}"
-                     style="display:block;padding:15px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;">
+                  <a href="{{ $json.links.tier5 }}" class="wm-btn"
+                     style="display:block;padding:16px 8px;background-color:#f5c684;color:#080808;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-align:center;text-decoration:none;">
                     All Day &nbsp;·&nbsp; 7 hr &nbsp;·&nbsp; $875
                   </a>
                 </td>
               </tr>
               <tr>
                 <td colspan="2" style="padding:6px 0 0;">
-                  <a href="{{ $json.links.decline }}"
-                     style="display:block;padding:13px 8px;background-color:#0b0b0b;border:1px solid #5a2b2b;color:#e6a6a6;font-family:Arial,Helvetica,sans-serif;font-size:14px;text-align:center;text-decoration:none;">
+                  <a href="{{ $json.links.decline }}" class="wm-btn"
+                     style="display:block;padding:15px 8px;background-color:#1c0f0f;border:1px solid #5a2b2b;color:#e6a6a6;font-family:Arial,Helvetica,sans-serif;font-size:15px;text-align:center;text-decoration:none;">
                     Decline this request
                   </a>
                 </td>
@@ -163,8 +270,8 @@
         </tr>
 
         <tr>
-          <td style="padding:14px 28px 0;">
-            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#666666;">
+          <td class="wm-pad" style="padding:16px 28px 0;">
+            <p class="wm-muted" style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#a8a29a;">
               Nothing is sent to {{ $('Booking Request').item.json.body.firstName }} until you review and press Send on the next screen. Once you've used one of these buttons, the rest stop working.
             </p>
           </td>
@@ -172,14 +279,19 @@
 
         <!-- footer -->
         <tr>
-          <td style="padding:30px 28px 40px;border-top:1px solid #1f1f1f;">
-            <p style="margin:22px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#666666;">© 2026 WayMaker Ink LLC</p>
-            <p style="margin:4px 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12px;color:#f5c684;">“I am the way, the truth, and the life.” — John 14:6</p>
+          <td class="wm-pad" style="padding:30px 28px 40px;">
+            <p class="wm-muted" style="margin:22px 0 0;padding-top:22px;border-top:1px solid #2a2a2a;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#a8a29a;">© 2026 WayMaker Ink LLC</p>
+            <p class="wm-gold" style="margin:6px 0 0;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:14px;line-height:1.5;color:#f5c684;">“I am the way, the truth, and the life.” — John 14:6</p>
           </td>
         </tr>
 
       </table>
+      <!--[if mso]>
+      </td></tr></table>
+      <![endif]-->
 
     </td>
   </tr>
 </table>
+</body>
+</html>

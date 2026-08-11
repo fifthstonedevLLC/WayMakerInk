@@ -92,6 +92,38 @@
                   <label class="wm-chip"><input type="radio" name="firstTattoo" value="No" checked /><span>No</span></label>
                 </div>
               </div>
+
+              <!-- Referral tracking. The source alone answers "is Instagram
+                   working"; it does not answer "who is sending us people",
+                   which is the question this section exists for — so the
+                   person-shaped sources reveal a name field below.
+                   REFERRAL_SOURCES in app.js decides which ones do. -->
+              <div class="wm-field">
+                <label for="heard-from">How Did You Hear About Us? <span class="wm-req">Required</span></label>
+                <select id="heard-from" name="heardFrom" required data-heard-from>
+                  <option value="" selected>Select one…</option>
+                  <option value="Friend or family">Friend or family</option>
+                  <option value="A previous client">A previous client</option>
+                  <option value="Another artist or shop">Another artist or shop</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="Google or web search">Google or web search</option>
+                  <option value="Walked by the shop">Walked by the shop</option>
+                  <option value="Event or convention">Event or convention</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <!-- Hidden until the source implies a person or needs detail.
+                   .wm-field sets display:grid, which beats the [hidden]
+                   attribute on its own — styles.css has the rule that makes
+                   this actually hide. -->
+              <div class="wm-field" data-referral-field hidden>
+                <label for="referred-by" data-referral-label>Who Can We Thank?</label>
+                <input id="referred-by" name="referredBy" autocomplete="off" data-referred-by />
+                <p class="wm-note" data-referral-note></p>
+              </div>
             </section>
 
             <section class="wm-section">

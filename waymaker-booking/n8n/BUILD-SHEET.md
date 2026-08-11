@@ -70,9 +70,34 @@ One sheet, row 1 = headers, exactly these names:
 rid  status  tierSent  decidedAt  estimate  artistNote
 artistKey  artistName  artistEmail
 firstName  lastName  email  phone  firstTattoo
+heardFrom  referredBy
 idea  placement  size  style
 submittedAt  pageUrl  referenceCount  driveFolder
 ```
+
+**Adding `heardFrom` / `referredBy` to an existing sheet:** append them as new
+columns at the far right rather than inserting them mid-table. n8n's *Map Each
+Column Manually* matches on the header name, not position, so the order in the
+sheet is free — but inserting a column shifts every formula and saved filter
+that referenced the old letters.
+
+### 0.2a Referral leaderboard
+
+`referredBy` carries a person's name when `heardFrom` is one of the three
+referral sources, and a free-text description when it is `Other` — the source
+column is what tells the two apart. Filter before counting or the "Other" rows
+land in the leaderboard:
+
+```
+=QUERY(A:Z, "select K, count(A) where K is not null and K != ''
+             and J matches 'Friend or family|A previous client|Another artist or shop'
+             group by K order by count(A) desc label count(A) 'Referrals'", 1)
+```
+
+Point `J` at `heardFrom` and `K` at `referredBy` — the letters depend on where
+the columns landed. `COUNTIF` ignores case, and `intake.js` collapses interior
+whitespace, so `jane doe` and `Jane  Doe` group together; it does **not**
+reconcile `Jane` against `Jane Doe`, so expect some hand-tidying.
 
 ### 0.3 Config that must be real before launch
 
@@ -124,7 +149,7 @@ Trigger: the public form POSTs `multipart/form-data`.
 | A1 | **Webhook** | `Booking request` | Method `POST` · Path `booking-request` · Respond: **Immediately** · Options → Raw Body **off** |
 | A2 | **Code** | `Intake` | Mode **Run Once for All Items** · paste `nodes/intake.js` |
 | A3 | **Code** | `Split refs` | Mode **Run Once for All Items** · paste snippet below (one item per uploaded image) |
-| A4 | **Google Drive** | `Create folder` | Resource `Folder` · Operation `Create` · Name `={{ $json.rid }}` · Parent: your Booking Requests folder |
+| A4 | **Google Drive** | `Create folder` | Resource `Folder` · Operation `Create` · Name `={{ $json.rid }}` · Parent: **By ID** → `1skYBp2W8ZLbFdfBDneNQMrMd0WLzQutF` (Booking Requests) |
 | A5 | **Google Drive** | `Upload refs` | Resource `File` · Operation `Upload` · Input Data Field Name `data` · File Name `={{ $binary.data.fileName }}` · Parent Folder: **By ID** → `={{ $('Create folder').first().json.id }}` |
 | A6 | **Google Sheets** | `Append row` | Operation `Append` · Mapping **Map Each Column Manually** · see field map below |
 | A7 | **Send Email** | `Email artist` | see field map below |
@@ -140,6 +165,19 @@ A1 Webhook ──▶ A2 Intake ──┬──▶ A3 Split refs ──▶ A4 Cre
 ⚠ **A7 must hang directly off A2.** Any node in between drops the binary and
 the artist email arrives with no attachments. A Set node with *Keep Only Set*
 is the usual killer.
+
+⚠ **Connect A3 before A7.** Both hang off A2, and with Execution Order **v1**
+(Workflow Settings) n8n runs branches to completion in connection order. A7's
+reference-folder link reads `$('Create folder').first().json.id` from the other
+branch, so A4 has to have run by then. Wire A2 → A3 first, A2 → A7 second. If
+the email errors with a `Create folder` reference problem, the connections are
+in the wrong order — delete both and re-draw them in that sequence.
+
+The same button falls back to the root Booking Requests folder
+(`1skYBp2W8ZLbFdfBDneNQMrMd0WLzQutF`) on requests with no images, where A4
+never runs at all. That ID is hardcoded in `templates/request-email.html`; if
+the Drive folder is ever moved or recreated, it has to change in two places —
+there and A4's Parent above.
 
 If you don't want `driveFolder` populated, you can drop A3–A5 and hang A6 off
 A2 as a second branch — the ASCII diagram in the README shows it that way.
@@ -176,6 +214,8 @@ return out;
 | email | `={{ $('Intake').first().json.email }}` |
 | phone | `={{ $('Intake').first().json.phone }}` |
 | firstTattoo | `={{ $('Intake').first().json.firstTattoo }}` |
+| heardFrom | `={{ $('Intake').first().json.heardFrom }}` |
+| referredBy | `={{ $('Intake').first().json.referredBy }}` |
 | idea | `={{ $('Intake').first().json.idea }}` |
 | placement | `={{ $('Intake').first().json.placement }}` |
 | size | `={{ $('Intake').first().json.size }}` |
@@ -197,8 +237,17 @@ images don't append multiple rows.
 | Reply To | `={{ $json.email }}` ← the client, so replying just works |
 | Subject | `={{ $json.firstName }} {{ $json.lastName }} — new booking request` |
 | Email Format | HTML |
-| HTML | contents of `templates/request-email.html`, edited per the README's *Changes needed* list |
+| HTML | contents of `templates/request-email.html` **whole, `<!doctype html>` and `<head>` included** (see C9a/C9b for why), edited per the README's *Changes needed* list |
 | Options → Attachments → Attribute Name | `={{ $json.attachmentProps }}` |
+| Options → Append n8n Attribution | **off** |
+
+**Append n8n Attribution defaults to ON.** Left on, n8n appends
+`--- This email was sent automatically with n8n` (with a link) below the
+template on every send. It is a node option, not part of the HTML, so no
+amount of editing the template removes it — turn it off on each Send Email
+node individually (A7, C9a, C9b). Older n8n builds may label it
+*Append n8n Attribution* under Options; if the toggle is missing entirely,
+the version predates it and upgrading is the only fix.
 
 ---
 
@@ -339,6 +388,7 @@ Identical on both nodes except the HTML body:
 | Email Format | HTML |
 | HTML (C9a) | contents of `templates/client-email-decline.html` |
 | HTML (C9b) | contents of `templates/client-email-booking.html` |
+| Options → Append n8n Attribution | **off** — see A7; these are the client-facing sends, so it matters most here |
 
 `Commit` already computes the right subject line for each path, so both nodes
 use the same expression.
@@ -351,6 +401,18 @@ Both templates hide the artist's note when it's blank, so an unwritten note
 leaves no empty bordered box behind. The decline template has no button and no
 estimate: `bookingUrl` is empty on that path, and rendering a button that goes
 nowhere is worse than rendering none.
+
+⚠ **Paste each template whole, `<!doctype html>` and `<head>` included.** All
+three email templates are complete documents rather than body fragments. n8n
+sends the HTML field verbatim without wrapping it, so the `<head>` is the only
+place the viewport meta and the media queries can live, and dropping it costs
+three things at once: mobile clients fall back to desktop width and scale the
+whole message down to unreadable, the tier buttons stop collapsing to one
+column, and Outlook/Gmail dark mode inverts the dark surfaces to white while
+leaving the light text sitting on top of them — which is what "the emails have
+white backgrounds" turned out to be. Every element still carries its inline
+styles as well, so a client that strips the `<style>` block degrades to the
+old fixed layout rather than to nothing.
 
 ---
 
@@ -387,6 +449,9 @@ nowhere is worse than rendering none.
 | 6 | Edit `sig` in a URL by one character | 403 page |
 | 7 | Delete `&sig=…` from a URL entirely | 403 page — **not** the review page |
 | 8 | Visit `/laynie` on the form while she's disabled | "Not taking requests" — **not** Nic's form |
+| 9 | Pick "Friend or family", name someone, submit | `heardFrom` and `referredBy` both land; artist email shows **Referred by** in gold |
+| 10 | Pick "Friend or family", type a name, then switch to Instagram, submit | `heardFrom = Instagram` and `referredBy` **blank** — not the abandoned name |
+| 11 | Pick "Other", describe it, then switch to "A previous client", submit | `referredBy` blank, not the "Other" sentence — it would otherwise rank in the leaderboard as a person |
 
 Step 2 is the status gate: if it shows "already decided" instead of the form,
 the review page and the sheet disagree about what undecided looks like. Step 4
@@ -406,9 +471,12 @@ treated as valid.
   still applies before step 1 of the smoke test.
 - **`budget` / `timing`** rows in the email template have no form field behind
   them. Delete the rows or add the inputs.
-- **`PASTE_BOOKING_REQUESTS_FOLDER_ID`** in the email template is still a
-  literal placeholder. It can't simply become `$json.driveFolder` — the intake
-  node doesn't have the folder ID, which is created on a parallel branch.
+- ~~**`PASTE_BOOKING_REQUESTS_FOLDER_ID`** in the email template is still a
+  literal placeholder.~~ Resolved: the button now reads
+  `$('Create folder').first().json.id` and links to the per-request folder,
+  falling back to the root folder when a request has no images. It still can't
+  be `$json.driveFolder` — the intake node never sees the ID — so it depends on
+  the A3-before-A7 connection order noted in *A — wiring*.
 - **The honeypot never reaches n8n.** `public/app.js` checks `company` itself
   and fakes success, then deletes the field from the payload — so the check in
   `nodes/intake.js` sees nothing and a bot POSTing straight at the webhook is
