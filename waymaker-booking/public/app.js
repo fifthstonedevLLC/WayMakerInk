@@ -37,7 +37,7 @@
     },
     laynie: {
       enabled: false, // set WM_ARTISTS in Dokploy to enable, no code change
-      name: 'Laynie Flugum',
+      name: 'Laynie Joy',
       headline: 'Tell us about the tattoo you have in mind.',
       blurb: 'Custom tattoo work. Share your idea and Laynie will follow up personally with an estimate.'
     }

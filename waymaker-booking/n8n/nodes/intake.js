@@ -48,7 +48,7 @@ if (SECRET === 'dev-signing-secret') {
 
 const ARTISTS = {
   nic: { name: 'Nic Sinnwell', email: cfg('WM_ARTIST_NIC_EMAIL') },
-  laynie: { name: 'Laynie Flugum', email: cfg('WM_ARTIST_LAYNIE_EMAIL') }
+  laynie: { name: 'Laynie Joy', email: cfg('WM_ARTIST_LAYNIE_EMAIL') }
 };
 
 for (const [key, a] of Object.entries(ARTISTS)) {

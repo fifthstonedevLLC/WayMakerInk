@@ -37,7 +37,7 @@ To exercise the env-driven config, set the variables and it runs the **real**
 rather than a reimplementation that can drift:
 
 ```bash
-WM_ARTISTS='{"nic":{"enabled":true,"name":"Nic Sinnwell"},"laynie":{"enabled":true,"name":"Laynie Flugum"}}' \
+WM_ARTISTS='{"nic":{"enabled":true,"name":"Nic Sinnwell"},"laynie":{"enabled":true,"name":"Laynie Joy"}}' \
   node dev-server.js
 ```
 
@@ -84,7 +84,7 @@ Edit `WM_ARTISTS` in Dokploy — no code change, no image rebuild:
 
 ```json
 {"nic":{"enabled":true,"name":"Nic Sinnwell"},
- "laynie":{"enabled":true,"name":"Laynie Flugum"}}
+ "laynie":{"enabled":true,"name":"Laynie Joy"}}
 ```
 
 `/laynie` starts working and `/` turns into a two-card chooser on its own.

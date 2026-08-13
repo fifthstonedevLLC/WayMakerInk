@@ -4,7 +4,7 @@
    No dependencies. Node 18+.
 
      node dev-server.js                 # uses public/config.js as-is
-     WM_ARTISTS='{"laynie":{"enabled":true,"name":"Laynie Flugum"}}' node dev-server.js
+     WM_ARTISTS='{"laynie":{"enabled":true,"name":"Laynie Joy"}}' node dev-server.js
 
    Stands in for nginx well enough to develop against:
      · try_files $uri $uri/ /index.html   — so /nic and /laynie resolve
