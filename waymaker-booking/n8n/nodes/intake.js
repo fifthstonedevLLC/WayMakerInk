@@ -18,7 +18,7 @@
    -------------------------------------------------------------------------- */
 const FALLBACK = {
   WM_SIGNING_SECRET: 'dev-signing-secret',
-  WM_N8N_BASE_URL: 'https://n8n.fifthstonedev.com',
+  WM_N8N_BASE_URL: 'https://booking.waymakerink.com',
   WM_ARTIST_NIC_EMAIL: 'REPLACE_nic@waymakerink.com',
   WM_ARTIST_LAYNIE_EMAIL: 'REPLACE_laynie@waymakerink.com'
 };

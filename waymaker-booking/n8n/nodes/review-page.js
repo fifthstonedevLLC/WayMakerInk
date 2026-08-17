@@ -22,7 +22,7 @@
    decision links, this page posts the decision back, and if the two disagree
    about the host the form posts somewhere the request never came from. */
 const FALLBACK = {
-  WM_N8N_BASE_URL: 'https://n8n.fifthstonedev.com'
+  WM_N8N_BASE_URL: 'https://booking.waymakerink.com'
 };
 
 function cfg(name) {

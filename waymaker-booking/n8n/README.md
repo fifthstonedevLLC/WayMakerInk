@@ -53,7 +53,7 @@ On the n8n host:
 | Variable | Purpose |
 |---|---|
 | `WM_SIGNING_SECRET` | HMAC key for the decision links. `openssl rand -base64 32`. Rotating it invalidates every unopened request email. The nodes throw rather than run on the placeholder value. |
-| `WM_N8N_BASE_URL` | e.g. `https://n8n.fifthstonedev.com`. Used to build the link targets. |
+| `WM_N8N_BASE_URL` | `https://booking.waymakerink.com`. Used to build the link targets. The booking domain, not the n8n host — the links are proxied there so they don't carry the flagged host. See `LINK-CUTOVER.md`. |
 | `WM_ARTIST_NIC_EMAIL` / `WM_ARTIST_LAYNIE_EMAIL` | Where the request email goes. The intake node throws on a `REPLACE_` value. |
 | `WM_BOOKING_LINKS` | Optional JSON override for the Acuity links; falls back to the map in `nodes/commit.js`. |
 | `NODE_FUNCTION_ALLOW_BUILTIN` | Must include `crypto` — signing is HMAC-SHA256 and the nodes `require('crypto')` outright. There is no non-crypto fallback; the previous 32-bit string hash was forgeable and has been removed. |

@@ -5,7 +5,7 @@
    Production values belong in the Dokploy environment, not in this file —
    it is served to the public. */
 window.WM_CONFIG = {
-  webhookUrl: 'https://n8n.fifthstonedev.com/webhook/booking-request',
+  webhookUrl: 'https://booking.waymakerink.com/webhook/booking-request',
   artists: null,          // null → app.js uses its built-in DEFAULT_ARTISTS
   homeUrl: 'https://waymakerink.com',
   redirectSeconds: 20     // 0 → stay on the confirmation, no auto-return

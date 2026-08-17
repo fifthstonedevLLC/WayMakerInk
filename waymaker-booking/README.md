@@ -50,7 +50,7 @@ It is **not** nginx — cache headers, gzip and the security headers in
 
 ```bash
 docker build -t wm-booking . && docker run --rm -p 8080:80 \
-  -e WM_WEBHOOK_URL=https://n8n.fifthstonedev.com/webhook/booking-request \
+  -e WM_WEBHOOK_URL=https://booking.waymakerink.com/webhook/booking-request \
   wm-booking
 ```
 

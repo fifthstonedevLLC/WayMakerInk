@@ -26,7 +26,7 @@
 
   var WEBHOOK_URL = CFG.webhookUrl ||
     window.WM_WEBHOOK_URL ||     /* older single-value config.js */
-    'https://n8n.fifthstonedev.com/webhook/booking-request';
+    'https://booking.waymakerink.com/webhook/booking-request';
 
   var DEFAULT_ARTISTS = {
     nic: {

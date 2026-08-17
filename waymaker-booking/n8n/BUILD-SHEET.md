@@ -42,7 +42,7 @@ the two disagree, one of them locks out every request.
 | Variable | Value | Required |
 |---|---|---|
 | `WM_SIGNING_SECRET` | output of `openssl rand -base64 32` | ✅ nodes throw if left at the placeholder |
-| `WM_N8N_BASE_URL` | `https://n8n.fifthstonedev.com` (no trailing slash) | ✅ |
+| `WM_N8N_BASE_URL` | `https://booking.waymakerink.com` (no trailing slash) — the booking domain, not the n8n host; see `LINK-CUTOVER.md` | ✅ |
 | `WM_ARTIST_NIC_EMAIL` | Nic's real address | ✅ nodes throw on `REPLACE_` |
 | `WM_ARTIST_LAYNIE_EMAIL` | Laynie's real address | ✅ nodes throw on `REPLACE_` |
 | `WM_BOOKING_LINKS` | JSON: `{"nic":{"tier1":"https://…"},…}` | optional — falls back to the map in `nodes/commit.js` |
@@ -127,7 +127,7 @@ container start and written into `public/config.js`:
 
 | Variable | Value |
 |---|---|
-| `WM_WEBHOOK_URL` | `https://n8n.fifthstonedev.com/webhook/booking-request` — **`/webhook/`, not `/webhook-test/`** |
+| `WM_WEBHOOK_URL` | `https://booking.waymakerink.com/webhook/booking-request` — **`/webhook/`, not `/webhook-test/`** |
 | `WM_ARTISTS` | JSON: `{"nic":{"enabled":true,"name":"Nic Sinnwell"},"laynie":{"enabled":false,"name":"Laynie Joy"}}` |
 | `WM_HOME_URL` | optional — where the confirmation page returns to. Defaults to `https://waymakerink.com` |
 | `WM_REDIRECT_SECONDS` | optional — how long the client gets to read the confirmation first. Defaults to `20`; **`0` switches the auto-return off** |
