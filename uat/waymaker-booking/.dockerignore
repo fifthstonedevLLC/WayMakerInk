@@ -1,0 +1,28 @@
+# The build context is THIS folder. Only public/, nginx.conf.template and the
+# two entrypoints are COPYed, so this is mostly belt-and-braces — but it keeps
+# the context small and makes it obvious that documentation and the n8n Code
+# node sources are not shipped.
+
+.git
+.gitignore
+.github
+
+# Documentation, and the n8n sources for the OLD workflows. These are reference
+# material that gets pasted into the n8n editor; nothing in the image reads
+# them, and the form no longer talks to n8n at all.
+README.md
+n8n/
+
+# Never let a real environment file into a layer.
+.env
+.env.*
+!.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+.claude/

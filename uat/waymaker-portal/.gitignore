@@ -1,0 +1,5 @@
+node_modules/
+dist/
+# Vite's dep pre-bundling cache. Machine-specific and regenerated on every
+# `npm run dev`.
+.vite/

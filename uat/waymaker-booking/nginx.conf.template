@@ -1,0 +1,266 @@
+# WayMaker Ink — Appointment Request, UAT
+#
+# Rendered to /etc/nginx/conf.d/default.conf at container start by
+# docker-entrypoint-uat.sh, which runs envsubst over an explicit variable list.
+#
+# This is production's nginx.conf plus exactly three UAT behaviours:
+#   1. X-Robots-Tag on every response, defaulting to noindex.
+#   2. A corner flag injected into every HTML response, so nobody — client,
+#      artist or you — mistakes this for the live form.
+#   3. Optional HTTP Basic auth in front of the whole site.
+#
+# Keep the rest in step with ../nginx.conf. If you change caching, the webhook
+# proxy or the hardening headers there, change them here in the same commit.
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Written at container start: either the auth_basic directives or an empty
+    # file, depending on whether WM_UAT_PASSWORD is set. Server level, not
+    # inside `location /` — the regex asset blocks below are separate locations
+    # and would otherwise be reachable unauthenticated.
+    include /etc/nginx/wm/auth.conf;
+
+    # ---------------------------------------------------------------------
+    # The UAT flag. sub_filter rather than an edit to index.html, so public/
+    # stays byte-identical to what production ships and the flag also lands on
+    # the review and confirmation pages that n8n renders through the proxy.
+    #
+    # Inline styles on purpose: styles.css is production's file, and the n8n
+    # pages do not load it at all.
+    # ---------------------------------------------------------------------
+    # sub_filter_types is left at its default, text/html. Restating it emits a
+    # "duplicate MIME type" warning at start-up.
+    sub_filter_once on;
+    sub_filter '</body>' '<div id="wm-uat-flag" style="position:fixed;z-index:2147483647;top:0;right:0;padding:6px 12px;border-bottom-left-radius:8px;background:#b3261e;color:#fff;font:700 12px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.06em;text-transform:uppercase;pointer-events:none;box-shadow:0 1px 6px rgba(0,0,0,.35)">${WM_UAT_LABEL}</div></body>';
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /healthz {
+        auth_basic off;
+        access_log off;
+        # default_type, not add_header — add_header APPENDS, so setting
+        # Content-Type that way emits two of them (the default
+        # application/octet-stream plus text/plain).
+        default_type text/plain;
+        return 200 'ok';
+    }
+
+    # Written by the entrypoint. Left readable without credentials so a crawler
+    # that somehow reaches the host can still be told to go away.
+    location = /robots.txt {
+        auth_basic off;
+        default_type text/plain;
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # index.html must never be cached, or a deploy won't reach returning
+    # visitors. Fingerprint-free assets get a short cache instead of a long one.
+    #
+    # ⚠ The hardening headers are repeated in every block below, and that is
+    # deliberate — do not "de-duplicate" them up to the server level. nginx's
+    # add_header inheritance is all-or-nothing: a context that declares any
+    # add_header of its own silently discards every one inherited from its
+    # parent. Because each of these blocks sets Cache-Control, a server-level
+    # copy of the hardening headers would reach no response at all. `always`
+    # does not change this — it only controls error responses.
+    location = /index.html {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # config.js is generated per-environment at container start. Caching it
+    # would serve UAT's webhook URL and artist set after a promotion.
+    location = /config.js {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # Shorter than production's 300s. A UAT round trip is you reloading after a
+    # rebuild, and a five-minute cache on app.js is five minutes of testing the
+    # previous build.
+    location ~* \.(css|js)$ {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    location ~* \.(png|jpg|jpeg|svg|ico|webp)$ {
+        add_header Cache-Control "public, max-age=2592000";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # Anything not matched above (the try_files fallback path).
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+
+    # -----------------------------------------------------------------------
+    # n8n webhooks, proxied so every artist- and client-facing link lives on
+    # this domain rather than on the n8n host.
+    #
+    # ⚠ Same n8n instance as production. The separation between UAT and live is
+    # the webhook PATH — the UAT workflows are duplicates with their own paths,
+    # their own Sheet and their own Drive folder. Nothing here enforces that;
+    # see ../PORTAL-INITIATIVE.md.
+    #
+    # ⚠ No add_header in this block, deliberately. Per the note above, it
+    # inherits the four server-level hardening headers — and declaring even one
+    # of its own would silently discard all four.
+    #
+    # ^~ rather than a bare prefix: regex locations are matched first, so the
+    # \.(css|js)$ block above would otherwise win for a webhook path ending
+    # in .js.
+    # -----------------------------------------------------------------------
+    location ^~ /webhook/ {
+        # Decision links from the artist's email land here. They carry their
+        # own HMAC signature and must work from a mail client, which will not
+        # answer a basic-auth challenge.
+        auth_basic off;
+
+        # Resolved per-request through Docker's embedded DNS rather than once
+        # at config load. A literal hostname in proxy_pass makes nginx refuse
+        # to START when n8n is unreachable — and since the healthcheck gates
+        # the deploy, the form would go down because n8n was slow. It would
+        # also cache that IP forever, so an n8n restart breaks the proxy
+        # silently. This form degrades to a 502 instead, and recovers on its
+        # own. proxy_pass with a variable drops the URI, hence $request_uri.
+        resolver ${WM_RESOLVER} valid=30s ipv6=off;
+        resolver_timeout 5s;
+        set $n8n ${WM_N8N_UPSTREAM};
+        proxy_pass $n8n$request_uri;
+
+        proxy_http_version 1.1;
+
+        # $host for an internal upstream; the upstream's own hostname when it is
+        # an external https one — Traefik in front of the hosted n8n routes on
+        # Host and SNI, and answers a 404 for "localhost:8080". Derived from
+        # WM_N8N_UPSTREAM by the entrypoint, so there is no third thing to keep
+        # in step.
+        proxy_ssl_server_name on;
+        proxy_set_header Host              ${WM_N8N_HOST};
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        # sub_filter cannot rewrite a gzipped upstream response, and would fail
+        # silently — the review page would simply arrive with no UAT flag.
+        # nginx re-compresses for the client below.
+        proxy_set_header Accept-Encoding   "";
+
+        # The intake form posts up to 5 client-resized JPEGs as multipart.
+        # nginx's 1m default would 413 a normal submission.
+        client_max_body_size 25m;
+        proxy_request_buffering off;
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout    120s;
+    }
+
+    # -----------------------------------------------------------------------
+    # The Supabase intake function, proxied so the form's POST is SAME-ORIGIN.
+    #
+    # ⚠ This is the reason the block exists, and it is not tidiness. app.js
+    # posts FormData and reads `res.ok`. A cross-origin response with no
+    # Access-Control-Allow-Origin is unreadable, so fetch REJECTS — and the
+    # retry path treats a rejection as a network fault and fires up to three
+    # times, while the function processes every one of them. Three rows, three
+    # notifications, and a form showing an error to a client whose request went
+    # through. Same-origin has no preflight and nothing to configure.
+    #
+    # ⚠ Basic auth is NOT turned off here, unlike /webhook/. This path is only
+    # ever called by fetch() from a page on this origin, and the browser
+    # replays the credentials it already holds. Turning it off would leave an
+    # unauthenticated write endpoint on a host whose whole point is that it is
+    # gated.
+    #
+    # The function is deployed with verify_jwt = false, so no apikey or
+    # Authorization header is needed — adding one would make this a preflighted
+    # request and undo the point of the proxy.
+    #
+    # ^~ rather than a bare prefix: regex locations are matched first, so the
+    # \.(css|js)$ block above would otherwise win for a path ending in .js.
+    # -----------------------------------------------------------------------
+    location ^~ /api/intake {
+        resolver ${WM_RESOLVER} valid=30s ipv6=off;
+        resolver_timeout 5s;
+        set $fns ${WM_FUNCTIONS_UPSTREAM};
+
+        # With a variable in proxy_pass, the URI written here is passed as-is
+        # rather than having the matched location prefix substituted into it.
+        # That is what maps /api/intake onto Supabase's /functions/v1/intake.
+        proxy_pass $fns/functions/v1/intake;
+
+        proxy_http_version 1.1;
+
+        # Supabase's edge router selects the project by SNI and Host. Passing
+        # the client's Host ("uat.booking.waymakerink.com") gets a 404 from the
+        # router rather than anything from the function.
+        proxy_ssl_server_name on;
+        proxy_set_header Host              ${WM_FUNCTIONS_HOST};
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        # Up to 5 client-resized JPEGs as multipart. nginx's 1m default would
+        # 413 a normal submission.
+        client_max_body_size 25m;
+        proxy_request_buffering off;
+
+        proxy_connect_timeout 10s;
+        # Longer than the form's own 30s AbortController deadline, so a slow
+        # function is the client's timeout to report rather than a 504 the
+        # retry path treats as worth trying twice more.
+        proxy_read_timeout    60s;
+    }
+
+    # UAT only: the n8n editor's "Listen for test event" URL, reachable on this
+    # domain so a half-built workflow can be exercised through the real proxy
+    # path instead of against the n8n host directly.
+    #
+    # ⚠ A /webhook-test/ URL accepts exactly one request and only while the
+    # editor is open. Never point WM_WEBHOOK_URL at one.
+    location ^~ /webhook-test/ {
+        auth_basic off;
+        resolver ${WM_RESOLVER} valid=30s ipv6=off;
+        resolver_timeout 5s;
+        set $n8ntest ${WM_N8N_UPSTREAM};
+        proxy_pass $n8ntest$request_uri;
+
+        proxy_http_version 1.1;
+        proxy_ssl_server_name on;
+        proxy_set_header Host              ${WM_N8N_HOST};
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Accept-Encoding   "";
+
+        client_max_body_size 25m;
+        proxy_request_buffering off;
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout    120s;
+    }
+
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml;
+    gzip_min_length 512;
+}

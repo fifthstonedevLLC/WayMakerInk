@@ -1,0 +1,101 @@
+# WayMaker Ink — admin portal
+#
+# Rendered to /etc/nginx/conf.d/default.conf at container start by
+# docker-entrypoint.sh, which runs envsubst over an explicit variable list.
+#
+# There is no /webhook/ proxy here. The portal talks to Supabase directly —
+# auth, PostgREST, Storage and the `respond` function all live on the Supabase
+# host and set their own CORS headers. The one thing that needs configuring is
+# WM_ALLOWED_ORIGINS on the Edge Functions, which must include this domain.
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Written at container start: either the auth_basic directives or an empty
+    # file. Server level, not inside `location /` — the regex asset blocks
+    # below are separate locations and would otherwise be reachable
+    # unauthenticated.
+    include /etc/nginx/wm/auth.conf;
+
+    # Single-page app: /r/WMI-ABC123 is a client route, not a file.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /healthz {
+        auth_basic off;
+        access_log off;
+        # default_type, not add_header — add_header APPENDS, so setting
+        # Content-Type that way emits two of them.
+        default_type text/plain;
+        return 200 'ok';
+    }
+
+    location = /robots.txt {
+        auth_basic off;
+        default_type text/plain;
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # ⚠ The hardening headers are repeated in every block below, deliberately.
+    # nginx's add_header inheritance is all-or-nothing: a context that declares
+    # any add_header of its own silently discards every one inherited from its
+    # parent. Because each of these blocks sets Cache-Control, a server-level
+    # copy would reach no response at all. `always` does not change this — it
+    # only controls error responses.
+    location = /index.html {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # Generated per-environment at container start. Caching it would serve
+    # UAT's Supabase project after a promotion.
+    location = /config.js {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # Vite fingerprints everything under /assets/, so these are immutable by
+    # construction — a new build is a new filename.
+    location ^~ /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    location ~* \.(png|jpg|jpeg|svg|ico|webp)$ {
+        add_header Cache-Control "public, max-age=2592000";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # The try_files fallback path.
+    #
+    # X-Frame-Options DENY and Referrer-Policy same-origin are stricter than
+    # the booking form's SAMEORIGIN / strict-origin-when-cross-origin, and
+    # deliberately so: this page holds a session that can read every client's
+    # contact details, and its URLs carry a request id worth not leaking to
+    # Acuity or to a font CDN in a Referer header.
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "same-origin" always;
+    add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml application/json;
+    gzip_min_length 512;
+}

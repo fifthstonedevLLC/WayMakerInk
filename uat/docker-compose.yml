@@ -1,0 +1,93 @@
+# ==========================================================================
+# WayMaker Ink — the UAT stack, locally
+#
+#   docker compose up --build
+#     form   → http://localhost:8080
+#     portal → http://localhost:8081
+#
+# ⚠ This brings up the two FRONT ENDS only. Neither does anything useful
+# without a Supabase project behind it: the form posts to the `intake` Edge
+# Function and the portal reads the database. Two ways to supply one, both in
+# README.md — a hosted UAT project, or `npx supabase start` for a fully local
+# stack.
+#
+# Values come from `.env` in this directory, which compose reads automatically.
+# Copy docker-compose.env.example to .env and fill it in; `.env` is gitignored.
+#
+# This file is for a laptop. Production and the deployed UAT hosts are two
+# separate Dokploy apps, each building one of these contexts with its own
+# environment panel — there is no compose file in that path.
+# ==========================================================================
+
+services:
+  form:
+    build:
+      context: ./waymaker-booking
+    image: wm-booking-uat
+    # Overridable because 8080 is the most contested port on any developer's
+    # machine, and the failure is a wall of Docker networking text rather than
+    # "that port is taken".
+    ports:
+      - "${WM_FORM_PORT:-8080}:80"
+    environment:
+      # Relative on purpose — nginx proxies /api/intake to WM_FUNCTIONS_UPSTREAM
+      # so the browser's POST is same-origin. See nginx.conf.template.
+      WM_WEBHOOK_URL: /api/intake
+      WM_FUNCTIONS_UPSTREAM: ${WM_FUNCTIONS_UPSTREAM:?set it in .env — the form has nowhere to submit without it}
+
+      # ⚠ Docker's embedded DNS, NOT a public resolver — and this is the one
+      # setting in this file that silently breaks form submission if it is
+      # wrong.
+      #
+      # nginx resolves the upstream per request through `resolver`, and that
+      # path does DNS queries only: it NEVER consults /etc/hosts. But
+      # `host.docker.internal` exists ONLY in /etc/hosts, put there by the
+      # extra_hosts entry below. Point this at 1.1.1.1 and every submission
+      # dies with
+      #     host.docker.internal could not be resolved (3: Host not found)
+      # as a 502 — which app.js correctly retries three times before showing
+      # the client an error, so one submission becomes three failures.
+      #
+      # 127.0.0.11 is the embedded resolver, which exists on the user-defined
+      # network compose always creates, and it DOES answer for
+      # host.docker.internal. A hosted https upstream works with either.
+      WM_RESOLVER: ${WM_RESOLVER:-127.0.0.11}
+
+      WM_ARTISTS: ${WM_ARTISTS:-{"nic":{"enabled":true,"name":"Nic Sinnwell","services":["tattoo","touchup"]},"laynie":{"enabled":true,"name":"Laynie Joy","services":["tattoo","piercing","touchup"]}}}
+
+      # 0 keeps the confirmation on screen instead of navigating away mid-read.
+      WM_REDIRECT_SECONDS: "0"
+      WM_UAT_LABEL: ${WM_UAT_LABEL:-UAT LOCAL}
+
+      # Unset by default: a password on localhost is friction with no threat
+      # behind it. Set both in .env to exercise the basic-auth path.
+      WM_UAT_USER: ${WM_UAT_USER:-}
+      WM_UAT_PASSWORD: ${WM_UAT_PASSWORD:-}
+
+      # Only reached if an n8n workflow is wired up. Harmless when it is not —
+      # nothing in the form path touches n8n any more.
+      WM_N8N_UPSTREAM: ${WM_N8N_UPSTREAM:-https://n8n.fifthstonedev.com}
+
+    # host.docker.internal resolves to the host from inside the container, which
+    # is how WM_FUNCTIONS_UPSTREAM reaches `npx supabase start` on the laptop.
+    # Docker Desktop provides it; this line is what makes it work on Linux too.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  portal:
+    build:
+      context: ./waymaker-portal
+    image: wm-portal-uat
+    ports:
+      - "${WM_PORTAL_PORT:-8081}:80"
+    environment:
+      WM_SUPABASE_URL: ${WM_SUPABASE_URL:?set it in .env — the portal cannot start without it}
+      # ⚠ The anon / public key. The entrypoint decodes it and refuses to start
+      # if it is a service-role key: that key bypasses every RLS policy and this
+      # value is written into /config.js, which is served to every visitor.
+      WM_SUPABASE_ANON_KEY: ${WM_SUPABASE_ANON_KEY:?set it in .env}
+      WM_ENV_LABEL: ${WM_UAT_LABEL:-UAT LOCAL}
+      WM_UAT_USER: ${WM_UAT_USER:-}
+      WM_UAT_PASSWORD: ${WM_UAT_PASSWORD:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

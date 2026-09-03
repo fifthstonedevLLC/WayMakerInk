@@ -1,0 +1,10 @@
+# Supabase CLI local state. `.temp` holds the linked project ref and pooler
+# details; `.branches` holds local branch metadata. Neither is shared.
+.branches/
+.temp/
+
+# The local stack's storage volume, if `supabase start` is ever run here.
+.env
+
+# Runtime log from `supabase functions serve`, written by nohup.
+fserve.log

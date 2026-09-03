@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink Appointment Request</title>
+    <meta name="description" content="Request a tattoo or piercing appointment with WayMaker Ink. Share what you have in mind and your artist will follow up with an estimate and a booking link." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/png" href="/WaymakerInk_Logo_transparent.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js"></script>
+    <script defer src="/app.js"></script>
+  </head>
+  <body class="wm-page">
+    <header class="wm-header">
+      <a href="https://waymakerink.com" class="wm-brand" aria-label="WayMaker Ink home">
+        <img src="/WaymakerInk_Logo_transparent.png" alt="WayMaker Ink logo" class="wm-logo" />
+      </a>
+    </header>
+
+    <main class="wm-main">
+      <div class="wm-shell">
+
+        <!-- ============================== CHOOSER (/) ============================== -->
+        <div data-view="chooser" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Appointment Request</p>
+            <h1 class="wm-title">Who would you like to work with?</h1>
+            <p class="wm-subtitle">Choose your artist and tell them about the piece you have in mind.</p>
+          </section>
+          <div class="wm-grid" data-chooser-grid></div>
+        </div>
+
+        <!-- =============================== FORM (/nic) ============================= -->
+        <div data-view="form" hidden>
+          <!-- The service chips sit above everything they change. A control
+               that rewrites content above itself means a piercing client is
+               greeted by a tattoo headline and then watches it change.
+
+               app.js hides the whole chip row for an artist who offers one
+               service, and the headline reverts to that artist's own. -->
+          <section class="wm-intro">
+            <p class="wm-kicker">Appointment Request</p>
+            <h1 class="wm-title" data-headline>Tell us about the tattoo you have in mind.</h1>
+
+            <!-- These radios are OUTSIDE the <form> — the hero is a sibling of
+                 it — so they are named `serviceChoice` and carry no submitted
+                 value of their own. app.js mirrors the choice into the hidden
+                 `service` input inside the form. One value, one place it is
+                 read from; a `name="service"` here would either be dropped
+                 silently or, if the markup ever moved, submitted twice. -->
+            <!-- ⚠ `data-service` carries the MACHINE key, not the label. The
+                 two diverged the moment Touch Up arrived: its label has a
+                 space in it and its key does not, and lowercasing the label to
+                 get the key would silently produce "touch up", which matches
+                 no artist's `services` entry and offers the client a chip that
+                 disables itself. app.js reads the attribute; the `value` is
+                 only what gets submitted. -->
+            <div class="wm-choice wm-hero-choice" data-service-field role="radiogroup" aria-label="What are you booking?" hidden>
+              <label class="wm-chip"><input type="radio" name="serviceChoice" value="Tattoo" checked data-service="tattoo" /><span>Tattoo</span></label>
+              <label class="wm-chip"><input type="radio" name="serviceChoice" value="Piercing" data-service="piercing" /><span>Piercing</span></label>
+              <label class="wm-chip"><input type="radio" name="serviceChoice" value="Touch Up" data-service="touchup" /><span>Touch Up</span></label>
+            </div>
+
+            <p class="wm-subtitle" data-subtitle>Every piece starts with a conversation. Share your idea below and your artist will review it personally, then follow up by email with a time estimate, a price, and a link to book.</p>
+          </section>
+
+          <form class="wm-form" data-booking-form novalidate>
+            <p class="wm-form-error" data-form-error hidden></p>
+
+            <section class="wm-section">
+              <h3>Artist</h3>
+              <div class="wm-field">
+                <label>Requesting With</label>
+                <div class="wm-static-name" data-artist-display>—</div>
+                <input type="hidden" name="artist" data-artist-key />
+                <input type="hidden" name="artistName" data-artist-name />
+                <input type="hidden" name="submittedAt" data-submitted-at />
+                <input type="hidden" name="pageUrl" data-page-url />
+                <!-- Generated once per page load and reused across retries, so a
+                     submission that times out and is resent lands as one row. -->
+                <input type="hidden" name="rid" value="" data-request-rid />
+                <!-- Written by app.js from the hero chips, which live outside
+                     this form. This is the only `service` the request carries. -->
+                <input type="hidden" name="service" value="Tattoo" data-service-value />
+                <input type="hidden" name="company" tabindex="-1" autocomplete="off" data-hp aria-hidden="true" />
+              </div>
+
+              <!-- Read-only echo of the hero choice, not a second set of chips:
+                   two controls for one value is how they drift. By the time
+                   someone is deep in the form the hero has scrolled away, and
+                   this is what tells them which form they are filling. -->
+              <div class="wm-field" data-service-echo-field hidden>
+                <label>Booking</label>
+                <div class="wm-static-name" data-service-echo>Tattoo</div>
+                <p class="wm-note">Change this at the top of the page.</p>
+              </div>
+            </section>
+
+            <section class="wm-section">
+              <h3>Your Information</h3>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="first-name">First Name <span class="wm-req">Required</span></label>
+                  <input id="first-name" name="firstName" placeholder="First" autocomplete="given-name" required />
+                </div>
+                <div class="wm-field">
+                  <label for="last-name">Last Name <span class="wm-req">Required</span></label>
+                  <input id="last-name" name="lastName" placeholder="Last" autocomplete="family-name" required />
+                </div>
+              </div>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="email">Email <span class="wm-req">Required</span></label>
+                  <input id="email" name="email" type="email" placeholder="your@email.com" autocomplete="email" inputmode="email" required />
+                  <p class="wm-note">Where your estimate and booking link will be sent.</p>
+                </div>
+                <div class="wm-field">
+                  <label for="phone">Phone</label>
+                  <input id="phone" name="phone" type="tel" placeholder="(555) 555-0000" autocomplete="tel" inputmode="tel" />
+                  <p class="wm-note">Optional — we follow up by email.</p>
+                </div>
+              </div>
+
+              <!-- Age sits above everything it changes: the first-time wording
+                   below it, the guardian section, and whether the tattoo path
+                   is open at all. Asking it any lower means someone fills in a
+                   whole form and is then told they can't have it.
+
+                   Hidden for an artist who only offers tattoos — there the 18+
+                   consent checkbox in References is the whole gate, exactly as
+                   it is today. -->
+              <div class="wm-field" data-age-field hidden>
+                <label>Age <span class="wm-req">Required</span></label>
+                <div class="wm-choice" role="radiogroup" aria-label="Age">
+                  <label class="wm-chip"><input type="radio" name="clientIsMinor" value="No" checked data-age /><span>18 Or Older</span></label>
+                  <label class="wm-chip"><input type="radio" name="clientIsMinor" value="Yes" data-age /><span>Under 18</span></label>
+                </div>
+                <p class="wm-note" data-age-note>Tattoo services are available to clients 18 and older only.</p>
+              </div>
+
+              <!-- Under 18 + ink of any kind. A hard no, said once and kindly,
+                   with the door that does exist rather than a dead end.
+                   A touch up is a tattoo for this purpose — the needle does not
+                   care that the work is already there. -->
+              <div class="wm-notice wm-notice-stop" data-tattoo-minor-stop hidden>
+                <h4>We can't tattoo under 18</h4>
+                <p>There's no consent form that changes this one — it's the law, and we won't work around it. We'd love to see you when you turn 18.</p>
+                <p data-minor-piercing-line>Piercings are a different story: Laynie pierces minors with a parent or legal guardian present.</p>
+                <button type="button" data-switch-to-piercing>Switch To A Piercing Request</button>
+              </div>
+
+              <!-- Same question, reworded by service — and by who is being
+                   worked on, since a parent filling this in is not the one
+                   getting pierced. The field NAME stays firstTattoo: the sheet
+                   column and the A6 column map are built on it, and renaming
+                   either breaks every saved filter. Only the label moves. -->
+              <div class="wm-field" data-first-time-field>
+                <label data-first-time-label>Is This Your First Tattoo?</label>
+                <div class="wm-choice" role="radiogroup" aria-label="First time?">
+                  <label class="wm-chip"><input type="radio" name="firstTattoo" value="Yes" /><span>Yes</span></label>
+                  <label class="wm-chip"><input type="radio" name="firstTattoo" value="No" checked /><span>No</span></label>
+                </div>
+              </div>
+
+              <!-- Referral tracking. The source alone answers "is Instagram
+                   working"; it does not answer "who is sending us people",
+                   which is the question this section exists for — so the
+                   person-shaped sources reveal a name field below.
+                   REFERRAL_SOURCES in app.js decides which ones do. -->
+              <div class="wm-field">
+                <label for="heard-from">How Did You Hear About Us? <span class="wm-req">Required</span></label>
+                <select id="heard-from" name="heardFrom" required data-heard-from>
+                  <option value="" selected>Select one…</option>
+                  <option value="Friend or family">Friend or family</option>
+                  <option value="A previous client">A previous client</option>
+                  <option value="Another artist or shop">Another artist or shop</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="Google or web search">Google or web search</option>
+                  <option value="Walked by the shop">Walked by the shop</option>
+                  <option value="Event or convention">Event or convention</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <!-- Hidden until the source implies a person or needs detail.
+                   .wm-field sets display:grid, which beats the [hidden]
+                   attribute on its own — styles.css has the rule that makes
+                   this actually hide. -->
+              <div class="wm-field" data-referral-field hidden>
+                <!-- The chip is static because the field is only in the
+                     document when it is required — mode 'none' hides the whole
+                     row. app.js swaps only the inner span's text. -->
+                <label for="referred-by"><span data-referral-label>Who Can We Thank?</span> <span class="wm-req">Required</span></label>
+                <input id="referred-by" name="referredBy" autocomplete="off" data-referred-by />
+                <p class="wm-note" data-referral-note></p>
+              </div>
+            </section>
+
+            <!-- ===================== WHO'S BEING PIERCED (minor) ==================== -->
+            <!-- Deliberately a separate section rather than retitling the one
+                 above. "Your Information" keeps meaning the adult we email;
+                 this names the person on the table. Splitting them is also what
+                 keeps the estimate going to the parent and not to a
+                 twelve-year-old. -->
+            <section class="wm-section" data-panel="guardian" hidden>
+              <h3>Who's Being Pierced</h3>
+              <p class="wm-note wm-note-lead">The details above are yours — we'll send the estimate and the booking link to you. These are theirs.</p>
+
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="minor-first">Their First Name <span class="wm-req">Required</span></label>
+                  <input id="minor-first" name="minorFirstName" placeholder="First" autocomplete="off" />
+                </div>
+                <div class="wm-field">
+                  <label for="minor-last">Their Last Name <span class="wm-req">Required</span></label>
+                  <input id="minor-last" name="minorLastName" placeholder="Last" autocomplete="off" />
+                </div>
+              </div>
+
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <!-- Recorded for the sheet and the waiver on the day. Nothing
+                       branches on the number: there are no per-piercing age
+                       minimums, only the one consent rule this section is. -->
+                  <label for="minor-age">Their Age <span class="wm-req">Required</span></label>
+                  <input id="minor-age" name="minorAge" type="number" min="0" max="17" inputmode="numeric" placeholder="e.g. 12" />
+                </div>
+                <div class="wm-field">
+                  <label for="guardian-rel">You Are Their <span class="wm-req">Required</span></label>
+                  <select id="guardian-rel" name="guardianRelationship">
+                    <option value="" selected>Select one…</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Legal guardian">Legal guardian</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="wm-notice">
+                <h4>What to bring on the day</h4>
+                <ul>
+                  <li>Your government-issued photo ID.</li>
+                  <li>Their birth certificate, or a photo ID of their own.</li>
+                  <li>Guardianship paperwork if your surnames don't match, or if you're not their parent.</li>
+                </ul>
+                <p>You'll need to stay in the room for the whole appointment — we can't pierce a minor with the guardian in the lobby.</p>
+              </div>
+
+              <label class="wm-consent" for="guardian-consent">
+                <input type="checkbox" id="guardian-consent" name="guardianConsent" value="Yes" />
+                <span>I am this person's parent or legal guardian, I consent to this piercing, and I'll be present for the appointment.</span>
+              </label>
+            </section>
+
+            <!-- ============================== THE PIECE ============================= -->
+            <section class="wm-section" data-panel="tattoo">
+              <h3>The Piece</h3>
+              <div class="wm-field">
+                <label for="idea">Describe Your Idea <span class="wm-req">Required</span></label>
+                <textarea id="idea" name="idea" rows="6" placeholder="Subject, style, mood, any lettering or dates, whether it's a cover-up or an addition to existing work…" required></textarea>
+                <p class="wm-note">The more detail here, the better the estimate your artist can send back.</p>
+              </div>
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="placement">Placement On The Body <span class="wm-req">Required</span></label>
+                  <input id="placement" name="placement" placeholder="e.g. inner right forearm" required />
+                </div>
+                <div class="wm-field">
+                  <label for="size">Approximate Size <span class="wm-req">Required</span></label>
+                  <select id="size" name="size" required>
+                    <option value="" selected>Select a size…</option>
+                    <option value="Under 2&quot;">Under 2"</option>
+                    <option value="2-4&quot;">2-4"</option>
+                    <option value="4-6&quot;">4-6"</option>
+                    <option value="6-8&quot;">6-8"</option>
+                    <option value="10&quot;+">10"+</option>
+                  </select>
+                </div>
+              </div>
+              <div class="wm-field">
+                <label>Style</label>
+                <div class="wm-choice" role="radiogroup" aria-label="Style">
+                  <label class="wm-chip"><input type="radio" name="style" value="Black &amp; grey" checked /><span>Black &amp; Grey</span></label>
+                  <label class="wm-chip"><input type="radio" name="style" value="Color" /><span>Color</span></label>
+                  <label class="wm-chip"><input type="radio" name="style" value="Not sure yet" /><span>Not Sure Yet</span></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============================ THE TOUCH UP ============================ -->
+            <!-- A touch up is its own service, not a checkbox on a tattoo. The
+                 first question is about work that already exists rather than
+                 about an idea, the session is shorter, and it has its own
+                 Acuity appointment types — three reasons the tattoo panel
+                 above could not simply grow a flag.
+
+                 The one question that changes the answer rather than just
+                 recording it is "did we do the original": shops price and
+                 accept other people's work differently, and the artist wants to
+                 know before they open the photos. -->
+            <section class="wm-section" data-panel="touchup" hidden>
+              <h3>The Touch Up</h3>
+
+              <div class="wm-field">
+                <label for="touchup-details">What Needs Touching Up <span class="wm-req">Required</span></label>
+                <textarea id="touchup-details" name="touchupDetails" rows="5" placeholder="Faded linework, a colour that's lifted, a spot that healed patchy, blowout, a name or date you'd like reworked…"></textarea>
+                <p class="wm-note">Photos matter more than words here — please add a clear, well-lit one below.</p>
+              </div>
+
+              <div class="wm-input-row">
+                <div class="wm-field">
+                  <label for="touchup-placement">Where On The Body</label>
+                  <input id="touchup-placement" name="touchupPlacement" placeholder="e.g. inner right forearm" autocomplete="off" />
+                </div>
+                <div class="wm-field">
+                  <label for="touchup-age">How Old Is The Tattoo</label>
+                  <select id="touchup-age" name="touchupAge">
+                    <option value="" selected>Select one…</option>
+                    <option value="Still healing">Still healing (under 6 weeks)</option>
+                    <option value="Under a year">Under a year</option>
+                    <option value="1-3 years">1–3 years</option>
+                    <option value="3-10 years">3–10 years</option>
+                    <option value="Over 10 years">Over 10 years</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="wm-field">
+                <!-- ⚠ These three values are matched character for character
+                     against the CHECK constraint on requests.touchup_by_us and
+                     against TOUCHUP_BY_US in the intake function. A fourth
+                     option added here and nowhere else is dropped silently. -->
+                <label>Did We Do The Original?</label>
+                <div class="wm-choice" role="radiogroup" aria-label="Did we do the original?">
+                  <label class="wm-chip"><input type="radio" name="touchupByUs" value="Yes" /><span>Yes</span></label>
+                  <label class="wm-chip"><input type="radio" name="touchupByUs" value="No" checked /><span>No</span></label>
+                  <label class="wm-chip"><input type="radio" name="touchupByUs" value="Not sure" /><span>Not Sure</span></label>
+                </div>
+                <p class="wm-note">Work from another shop is welcome — it just changes what your artist needs to look at first.</p>
+              </div>
+            </section>
+
+            <!-- ============================ THE PIERCING ============================ -->
+            <!-- The picker reads exactly as the framed price list in the shop
+                 does, because that list is what a client compares the site
+                 against. Nothing she does not perform appears here at all —
+                 that absence is the whole of the "we don't do that" rule. -->
+            <section class="wm-section" data-panel="piercing" hidden>
+              <h3>The Piercing</h3>
+
+              <div class="wm-field">
+                <label for="piercing-type">Piercing <span class="wm-req">Required</span></label>
+                <select id="piercing-type" name="piercingType" data-piercing-type>
+                  <option value="" selected>Select a piercing…</option>
+                  <optgroup label="Ear">
+                    <option value="Basic Lobe">Basic Lobe</option>
+                    <option value="Helix">Helix</option>
+                    <option value="Forward Helix">Forward Helix</option>
+                    <option value="Rook">Rook</option>
+                    <option value="Daith">Daith</option>
+                    <option value="Tragus">Tragus</option>
+                    <option value="Anti-tragus">Anti-tragus</option>
+                    <option value="Conch">Conch</option>
+                  </optgroup>
+                  <optgroup label="Face">
+                    <option value="Basic Eyebrow">Basic Eyebrow</option>
+                    <option value="Nose">Nose</option>
+                    <option value="Lip">Lip</option>
+                  </optgroup>
+                  <optgroup label="Body">
+                    <option value="Bellybutton">Bellybutton</option>
+                  </optgroup>
+                  <option value="Something else — I'll describe it">Something else — I'll describe it</option>
+                </select>
+                <p class="wm-note" data-piercing-note>Every price includes the piercing service and your standard jewelry.</p>
+              </div>
+
+              <div class="wm-input-row">
+                <!-- Count is the only input the price reads, which is why it is
+                     a chip pair and not free text. Pair is disabled for the
+                     piercings the menu prices single-only, so nobody can pick a
+                     combination there is no price behind. -->
+                <div class="wm-field">
+                  <label>How Many <span class="wm-req">Required</span></label>
+                  <div class="wm-choice" role="radiogroup" aria-label="How many">
+                    <label class="wm-chip"><input type="radio" name="piercingCount" value="Single" checked data-count /><span>Single</span></label>
+                    <label class="wm-chip" data-pair-chip><input type="radio" name="piercingCount" value="Pair" data-count data-pair /><span>Pair</span></label>
+                  </div>
+                  <p class="wm-note" data-count-note hidden>This one is done singly.</p>
+                </div>
+                <div class="wm-field">
+                  <label for="piercing-side">Which Side</label>
+                  <input id="piercing-side" name="piercingSide" placeholder="e.g. left, right, or both" autocomplete="off" />
+                  <p class="wm-note">Optional — it doesn't change the price.</p>
+                </div>
+              </div>
+
+              <div class="wm-field">
+                <label>Jewelry</label>
+                <div class="wm-choice" role="radiogroup" aria-label="Jewelry">
+                  <label class="wm-chip"><input type="radio" name="jewelry" value="Studio" checked /><span>Pick From The Studio</span></label>
+                  <label class="wm-chip"><input type="radio" name="jewelry" value="Own" /><span>I Have My Own</span></label>
+                  <label class="wm-chip"><input type="radio" name="jewelry" value="Unsure" /><span>Not Sure Yet</span></label>
+                </div>
+                <p class="wm-note" data-jewelry-note>Fresh piercings are done with implant-grade jewelry. If you're bringing your own, your artist will let you know whether it can be used for the initial piercing.</p>
+              </div>
+
+              <div class="wm-field">
+                <label for="piercing-notes">Anything We Should Know</label>
+                <textarea id="piercing-notes" name="piercingNotes" rows="4" placeholder="Metal sensitivities, a piercing at this spot that closed or rejected, ear anatomy you've been told about, glasses or a helmet you wear daily…"></textarea>
+                <p class="wm-note">Not required, but it's what decides whether a placement will heal.</p>
+              </div>
+            </section>
+
+            <section class="wm-section" data-panel="references">
+              <h3>References</h3>
+              <div class="wm-field">
+                <label for="refs-input" data-refs-label>Reference Images</label>
+                <div class="wm-refs" data-refs>
+                  <input id="refs-input" class="wm-refs-input" type="file" accept="image/*" multiple data-refs-input />
+                  <label for="refs-input" class="wm-refs-btn">Add Images</label>
+                  <p class="wm-refs-hint" data-refs-hint></p>
+                  <div class="wm-ref-grid" data-refs-grid></div>
+                </div>
+              </div>
+
+              <!-- The adult path only. When a guardian has consented above,
+                   that consent is the one that counts and asking an adult to
+                   confirm their own age twice is noise. -->
+              <label class="wm-consent" for="age-confirm" data-adult-consent>
+                <input type="checkbox" id="age-confirm" name="ageConfirm" value="yes" required />
+                <span data-age-copy>I confirm I am 18 years of age or older. Tattoo services are available to clients 18 and older only.</span>
+              </label>
+            </section>
+
+            <div class="wm-progress" data-progress hidden><i></i></div>
+
+            <div class="wm-actions" data-actions>
+              <p class="wm-note wm-note-wide">This is a request, not a confirmed booking. Your artist reviews every request personally and replies by email.</p>
+              <button type="submit" class="wm-button" data-submit>Send Request</button>
+            </div>
+            <p class="wm-status" data-status role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <!-- ============================== SUCCESS ============================== -->
+        <!-- Shown when the URL names an artist who isn't taking requests, or
+             isn't an artist at all. Never silently fall back to another
+             artist — a request filed against the wrong person is worse than
+             no request. -->
+        <div data-view="unavailable" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Not Available</p>
+            <h1 class="wm-title" data-unavailable-title>This artist isn't taking requests right now.</h1>
+            <p class="wm-subtitle" data-unavailable-body></p>
+          </section>
+        </div>
+
+        <div data-view="done" hidden>
+          <section class="wm-intro">
+            <p class="wm-kicker">Request Received</p>
+            <h1 class="wm-title">Your request is in.</h1>
+          </section>
+          <section class="wm-section">
+            <h3>What Happens Next</h3>
+            <p class="wm-done-body" data-done-body></p>
+            <p class="wm-note">If you don't hear from us within a few days, check your spam folder before reaching out.</p>
+          </section>
+
+          <!-- Auto-return to the main site. Visible and cancellable on purpose:
+               WCAG 2.2 SC 2.2.1 (Timing Adjustable) requires a way to turn off a
+               time limit, and pulling the page away while someone is still
+               reading what happens next is the worst possible moment for it.
+
+               The ticking sentence is aria-hidden and the static one is not:
+               a live region that re-announces every second is unusable with a
+               screen reader, so those users get the fact once and the two
+               buttons, which say the same thing without a clock.
+
+               Stays hidden unless app.js starts a timer, so setting
+               WM_REDIRECT_SECONDS=0 removes the whole block rather than
+               leaving a dead countdown on the page. -->
+          <section class="wm-redirect" data-redirect hidden>
+            <p class="wm-note wm-redirect-note" data-redirect-note aria-hidden="true"></p>
+            <p class="wm-sr-only" data-redirect-sr></p>
+            <div class="wm-redirect-actions">
+              <a class="wm-button" data-redirect-now>Go To WayMaker Ink</a>
+              <button type="button" class="wm-button wm-button-quiet" data-redirect-cancel>Stay On This Page</button>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="wm-footer">
+      <span>© 2026 WayMaker Ink LLC</span>
+      <span>“I am the way, the truth, and the life.” — John 14:6</span>
+    </footer>
+  </body>
+</html>

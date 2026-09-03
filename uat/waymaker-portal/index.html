@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WayMaker Ink — Requests</title>
+    <!-- The portal shows client contact details and photographs. It must never
+         appear in a search result, whatever the host's robots.txt says. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/WaymakerInk_Logo_transparent.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Written at container start by docker-entrypoint.sh from the Dokploy
+         environment, exactly as the booking form's config.js is. Deliberately
+         NOT a VITE_ build-time variable: baking the Supabase URL into the
+         bundle means a rebuild to point UAT at a different project, and it
+         means the built image is environment-specific. This one is not. -->
+    <script src="/config.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+

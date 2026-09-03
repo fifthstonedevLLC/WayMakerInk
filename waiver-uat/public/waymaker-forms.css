@@ -1,0 +1,520 @@
+:root {
+  color-scheme: dark;
+  --bg: #080808;
+  --surface: #0b0b0b;
+  --surface-2: #1F1F1F;
+  --text: #F7F7F7;
+  --muted: #666666;
+  --accent: #F5C684;
+  --accent-strong: #F5C684;
+  --border: #999999;
+  --border-2: #999999;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: 'DM Sans', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-strong); }
+img { max-width: 100%; display: block; }
+button, input, textarea, select { font: inherit; }
+
+.wm-page { min-height: 100vh; display: flex; flex-direction: column; }
+.wm-footer {
+  background: #080808;
+  border-bottom: 1px solid #1F1F1F;
+  border-top: 1px solid #1F1F1F;
+}
+.wm-header {
+  background: #666666;
+  border-bottom: 1px solid #999999;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: center;
+}
+.wm-footer {
+  margin-top: auto;
+  padding: 24px 32px;
+  border-top: 1px solid #1F1F1F;
+  border-bottom: 0;
+  color: #666666;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.wm-logo {
+  width: 200px;
+  height: auto;
+  object-fit: contain;
+}
+
+.wm-main {
+  flex: 1;
+  padding: 64px 24px 96px;
+}
+.wm-shell {
+  max-width: 980px;
+  margin: 0 auto;
+}
+.wm-intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 48px;
+}
+.wm-kicker {
+  font-size: 0.75rem;
+  letter-spacing: 0.35rem;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.wm-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+.wm-subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.wm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.wm-card {
+  display: block;
+  padding: 32px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+.wm-card:hover,
+.wm-card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  background: #1F1F1F;
+}
+.wm-card h2 {
+  font-size: 1.35rem;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+.wm-card p {
+  margin: 0;
+  color: var(--muted);
+}
+.wm-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #999999;
+  font-size: 0.76rem;
+  letter-spacing: 0.22rem;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.wm-form {
+  display: grid;
+  gap: 22px;
+}
+.wm-section {
+  background: var(--surface);
+  border: 1px solid #444444;
+  border-radius: 16px;
+  padding: 24px;
+}
+.wm-section h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: 0.24rem;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.wm-field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.wm-field label {
+  font-size: 0.74rem;
+  letter-spacing: 0.2rem;
+  text-transform: uppercase;
+  color: #F7F7F7;
+}
+.wm-field input,
+.wm-field textarea,
+.wm-field select {
+  width: 100%;
+  border: 1px solid #999999;
+  background: #080808;
+  color: var(--text);
+  padding: 13px 14px;
+  border-radius: 10px;
+}
+.wm-field input:focus,
+.wm-field textarea:focus,
+.wm-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+/* Calculated, non-editable fields (e.g. Age from date of birth). */
+.wm-field input[readonly] {
+  background: #1F1F1F;
+  color: #F7F7F7;
+  cursor: default;
+}
+.wm-field input[readonly]:focus {
+  border-color: #999999;
+}
+.wm-input-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+/* Under-18 block notice on the 18+ (tattoo) form. */
+.wm-minor-block {
+  margin: -4px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #5a2b2b;
+  background: #1c0f0f;
+  color: #e6a6a6;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+/* Submit-time validation banner (replaces the old alert() popups). Shares the
+   red-notice palette with .wm-minor-block; shown by the submit handler. */
+.wm-form-error {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #5a2b2b;
+  background: #1c0f0f;
+  color: #e6a6a6;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+/* Red highlight on a field that failed submit-time validation. Cleared when
+   the client edits the field (or on the next submit attempt). */
+.wm-field input.wm-invalid,
+.wm-field textarea.wm-invalid,
+.wm-field select.wm-invalid,
+.wm-toggle.wm-invalid,
+.wm-signature.wm-invalid,
+.wm-license.wm-invalid {
+  border-color: #e05a5a;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.3);
+}
+/* Red-tint the background of text fields so the miss is unmistakable. */
+.wm-field input.wm-invalid,
+.wm-field textarea.wm-invalid,
+.wm-field select.wm-invalid {
+  background: #241212;
+}
+/* Keep the red ring and tint even while the invalid field has focus. */
+.wm-field input.wm-invalid:focus,
+.wm-field textarea.wm-invalid:focus,
+.wm-field select.wm-invalid:focus {
+  border-color: #e05a5a;
+  background: #241212;
+}
+/* "Optional" tag marking a provision the client may skip. */
+.wm-optional-badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 9px;
+  border: 1px solid #F5C684;
+  border-radius: 999px;
+  background: #1F1F1F;
+  color: #F5C684;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+/* City / State / ZIP: give City more room than State and ZIP. */
+.wm-address-row {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+/* Date of birth: Month + Day dropdowns beside a typed Year (number keypad).
+   Replaces the native date calendar, whose year-scrolling confused older
+   clients on mobile. The three controls inherit the standard field styling. */
+.wm-dob {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  gap: 10px;
+}
+.wm-provision {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid #999999;
+}
+.wm-provision:last-child { border-bottom: 0; }
+.wm-toggle {
+  min-width: 40px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: transparent;
+  font-size: 0.8rem;
+  letter-spacing: 0.06rem;
+}
+.wm-toggle.is-checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #080808;
+  font-weight: 700;
+}
+.wm-static-date,
+.wm-static-name {
+  width: 100%;
+  border: 1px solid #999999;
+  background: #1F1F1F;
+  color: var(--text);
+  padding: 13px 14px;
+  border-radius: 10px;
+}
+.wm-static-name {
+  min-height: 48px;
+}
+.wm-signature {
+  border: 1px solid #999999;
+  background: #080808;
+  border-radius: 10px;
+  padding: 8px;
+  transition: border-color 0.2s ease;
+}
+.wm-signature.is-signed {
+  border-color: var(--accent);
+}
+.wm-sig-canvas {
+  width: 100%;
+  height: 160px;
+  display: block;
+  border-radius: 6px;
+  background:
+    linear-gradient(#080808, #080808) padding-box,
+    repeating-linear-gradient(0deg, transparent, transparent 158px, #999999 158px, #999999 159px);
+  cursor: crosshair;
+  touch-action: none;
+}
+.wm-sig-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px 2px;
+}
+.wm-sig-hint {
+  font-size: 0.74rem;
+  letter-spacing: 0.14rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.wm-sig-clear {
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.wm-sig-clear:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.wm-req {
+  color: var(--accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.08rem;
+  text-transform: uppercase;
+}
+.wm-license {
+  position: relative;
+  border: 1px solid #999999;
+  background: #080808;
+  border-radius: 10px;
+  padding: 14px;
+}
+/* Visually hidden but still focusable and functional; driven by the label.
+   Scoped under .wm-field so it outweighs `.wm-field input { width: 100% }`,
+   which would otherwise stretch this input full-width and push the page
+   sideways. */
+.wm-field .wm-license-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.wm-license-btn {
+  display: inline-block;
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text);
+  padding: 8px 18px;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.wm-license-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.wm-license-input:focus-visible + .wm-license-btn {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.wm-license-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+}
+.wm-license-preview[hidden] {
+  display: none;
+}
+.wm-license-hint {
+  margin: 10px 2px 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.04rem;
+  color: var(--muted);
+}
+.wm-consent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.wm-consent input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+/* Missed consent checkbox: red ring instead of the gold accent color. */
+.wm-consent input[type="checkbox"].wm-invalid {
+  accent-color: #e05a5a;
+  outline: 2px solid #e05a5a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.3);
+}
+.wm-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.wm-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  padding: 12px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.wm-button:hover {
+  background: var(--accent);
+  color: #080808;
+}
+
+@media (max-width: 760px) {
+  .wm-grid,
+  .wm-input-row { grid-template-columns: 1fr; }
+  .wm-main { padding: 42px 16px 72px; }
+  .wm-header, .wm-footer { padding-left: 18px; padding-right: 18px; }
+}
+
+/* Square edges — no rounded corners anywhere. */
+.wm-card,
+.wm-section,
+.wm-field input,
+.wm-field textarea,
+.wm-field select,
+.wm-toggle,
+.wm-button,
+.wm-static-date,
+.wm-static-name,
+.wm-signature,
+.wm-sig-canvas,
+.wm-sig-clear {
+  border-radius: 0;
+}
+
+/* Honeypot. Taken out of flow entirely so it can never shift the layout, and
+   hidden the same way .wm-license-input is rather than with `display: none` or
+   `type="hidden"` — a field bots will actually fill is the whole point. It is
+   still submitted; the server decides. */
+.wm-hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Turnstile mount. Reserve the widget's height so the submit button doesn't
+   jump when Cloudflare's iframe finishes loading. */
+.wm-turnstile {
+  min-height: 65px;
+  margin-bottom: 18px;
+}
+.wm-turnstile:empty {
+  min-height: 0;
+  margin-bottom: 0;
+}

@@ -1,0 +1,27 @@
+# The build context is THIS folder. node_modules is the one that matters —
+# without this line every build uploads ~200MB to the daemon and then throws it
+# away, because the image installs its own inside the build stage.
+node_modules/
+dist/
+.vite/
+
+.git
+.gitignore
+.github
+
+# Reference material. Nothing in the image reads it.
+README.md
+
+# Never let a real environment file into a layer.
+.env
+.env.*
+!.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+.claude/

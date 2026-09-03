@@ -1,0 +1,185 @@
+<!--
+  n8n → "Portal Response" → node 4b "Email client — booking"
+  Email Format: HTML
+
+    To        ={{ $json.to }}
+    Reply To  ={{ $json.replyTo }}      ← the artist
+    Subject   ={{ $json.subject }}
+
+  Sent when the artist priced the request in the admin portal. The decline path
+  is a separate template (client-email-decline.html) on the other side of the
+  IF on {{ $json.isDecline }} — the two messages differ enough that branching
+  inside one template made it unreadable.
+
+  Values are addressed as $json.X. There is no Commit node in this workflow —
+  the Verify node flattens the webhook body onto $json, so every value is
+  already there. See ../BUILD-RESPONSE.md.
+
+  Paste the whole file, doctype included — n8n sends the body verbatim, so the
+  <head> is ours. See request-email.html for why the three metas and the media
+  query are load-bearing rather than decoration; the short version is that
+  without them mobile clients render at desktop width and Outlook/Gmail dark
+  mode inverts these surfaces to white underneath the light text.
+
+  Table layout and inline styles throughout: Gmail strips <style> blocks in
+  some contexts, and Outlook ignores most modern CSS. The head is an
+  enhancement layer; the inline styles are the floor.
+
+  This one goes to clients, on whatever phone they own — it is the template
+  where the type sizes matter most.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Your Estimate — WayMaker Ink</title>
+<style>
+  :root { color-scheme: dark; supported-color-schemes: dark; }
+
+  body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#080808;
+         -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  img { border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; max-width:100%; }
+
+  [data-ogsc] .wm-bg,   [data-ogsb] .wm-bg   { background-color:#080808 !important; }
+  [data-ogsc] .wm-card, [data-ogsb] .wm-card { background-color:#111111 !important; }
+  [data-ogsc] .wm-text  { color:#f7f7f7 !important; }
+  [data-ogsc] .wm-muted { color:#a8a29a !important; }
+  [data-ogsc] .wm-gold  { color:#f5c684 !important; }
+
+  @media only screen and (max-width:600px) {
+    .wm-pad  { padding-left:22px !important; padding-right:22px !important; }
+    .wm-h1   { font-size:23px !important; line-height:1.3 !important; }
+    .wm-note { font-size:18px !important; padding-left:16px !important; }
+    .wm-est  { font-size:26px !important; }
+    .wm-btn  { font-size:18px !important; padding:18px 8px !important; }
+  }
+</style>
+</head>
+<body class="wm-bg" style="margin:0;padding:0;background-color:#080808;">
+
+<!-- Inbox preview line, hidden in the message body. -->
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#080808;">
+  {{ $json.artistName }} reviewed your idea — here's the estimate and your booking link.
+  &#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;
+</div>
+
+<table role="presentation" class="wm-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:0;">
+
+      <!--[if mso]>
+      <table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td>
+      <![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;margin:0 auto;">
+
+        <!-- Header -->
+        <tr>
+          <td align="center" class="wm-pad" style="padding:36px 28px 30px;">
+            <div class="wm-text" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;letter-spacing:5px;color:#f7f7f7;text-transform:uppercase;">WayMaker Ink</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 8px;">
+            <div class="wm-gold" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">Your Estimate</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 32px;">
+            <div class="wm-h1 wm-text" style="font-family:Georgia,'Times New Roman',serif;font-size:27px;line-height:1.25;color:#f7f7f7;">
+              Hi {{ $json.firstName }} — {{ $json.artistName }} reviewed your idea.
+            </div>
+          </td>
+        </tr>
+
+        <!-- Personal note, set as the lead: it is the only part of this email a
+             human wrote, so it gets serif, size, and space of its own. The whole
+             row disappears when the artist left it blank — an empty bordered box
+             reads as a mistake.
+
+             Font stack inside the expression stays quote-free on purpose;
+             escaping 'Times New Roman' inside the string breaks in n8n. The
+             classes are what the media query above narrows on a phone, where a
+             19px serif quote at 22px indent overflows the line. -->
+        {{ $json.artistNote ? '<tr><td class="wm-pad" style="padding:0 28px 36px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-left:3px solid #f5c684;padding:6px 0 6px 22px;"><div class="wm-note" style="font-family:Georgia,serif;font-size:19px;line-height:1.75;color:#eae7e1;">' + $json.artistNote + '</div><div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a8a29a;padding-top:18px;">— ' + $json.artistName + '</div></td></tr></table></td></tr>' : '' }}
+
+        <!-- The estimate. The artist may have edited this on the review page,
+             so it is text rather than a recomputed tier price. -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 20px;">
+            <table role="presentation" class="wm-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111111" style="background-color:#111111;border:1px solid #4a4a4a;">
+              <tr>
+                <td style="padding:22px 24px;">
+                  <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a8a29a;padding-bottom:10px;">Estimated Session</div>
+                  <div class="wm-est wm-gold" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.3;color:#f5c684;">{{ $json.estimate }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Booking button -->
+        <tr>
+          <td class="wm-pad" style="padding:6px 28px 14px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" bgcolor="#f5c684" style="background-color:#f5c684;">
+                  <a href="{{ $json.bookingUrl }}" class="wm-btn"
+                     style="display:block;padding:18px 8px;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:bold;color:#080808;text-decoration:none;">
+                    Book Your Appointment
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 34px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#a8a29a;">
+              Opens {{ $json.artistName }}'s calendar with the session length already set.
+            </div>
+          </td>
+        </tr>
+
+        <!-- The two things clients ask about, kept quiet: they are fine print,
+             not part of the message. Quiet means smaller and further down the
+             page — not grey-on-black at 3:1, which is unreadable on a phone in
+             daylight and the reason this whole file got revisited. -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 30px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#a8a29a;padding-top:22px;border-top:1px solid #2a2a2a;">
+              The estimate covers the time booked, not a fixed price. Bigger pieces sometimes need a second session — {{ $json.artistName }} will say so before booking more time.
+              <br /><br />
+              Questions, or want to change the design? Reply to this email and it goes straight to {{ $json.artistName }}.
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 44px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#a8a29a;padding-top:18px;border-top:1px solid #2a2a2a;">
+              WayMaker Ink &nbsp;·&nbsp; Request {{ $json.rid }}
+              <br />
+              You're receiving this because you submitted an appointment request.
+            </div>
+          </td>
+        </tr>
+
+      </table>
+      <!--[if mso]>
+      </td></tr></table>
+      <![endif]-->
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,87 @@
+# ==========================================================================
+# WayMaker Ink — Supabase CLI config, UAT
+#
+# `project_id` is the local-stack container prefix, not the hosted project ref.
+# Link to the hosted UAT project with:
+#
+#   npx supabase link --project-ref <ref>
+#   npx supabase db push
+#   npx supabase functions deploy intake respond
+# ==========================================================================
+
+project_id = "waymaker-uat"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+# ⚠ Local only. `supabase db reset` and a fresh `supabase start` apply this;
+# `supabase db push` — the only command that touches a hosted project — does
+# not. That asymmetry is what keeps the sample requests off UAT and production.
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+
+# Nic and Laynie are created by hand in the dashboard (or by
+# ./bootstrap-local.sh on a local stack). Nobody signs themselves up for a
+# portal that shows every client's contact details and photographs.
+#
+# This is the flag that blocks self-registration: it disables the /signup
+# endpoint project-wide. Creating a user through the Auth Admin API is
+# unaffected, which is exactly the split we want.
+enable_signup = false
+
+[auth.email]
+# ⚠ TRUE, and it has to be. This key reads like "allow signups via email", but
+# it maps to GOTRUE_EXTERNAL_EMAIL_ENABLED — the email PROVIDER switch. Setting
+# it false turns off email logins as well as email signups, and every sign-in
+# attempt comes back:
+#
+#     {"code":422,"error_code":"email_provider_disabled",
+#      "msg":"Email logins are disabled"}
+#
+# which reads like a broken portal rather than a config choice. Self-
+# registration is already blocked by `enable_signup` under [auth] above; this
+# one only needs to keep the provider alive so the two real accounts can use it.
+enable_signup = true
+
+# No confirmation email: accounts are created by an admin with
+# email_confirm: true already set, so there is nobody to confirm.
+enable_confirmations = false
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+
+# --------------------------------------------------------------- functions ---
+
+# ⚠ Public by necessity. The booking form has no user to authenticate, so this
+# endpoint is open — its defences are the honeypot, the artist/service check,
+# and the fact that it can only ever insert a row with status = 'NEW'.
+[functions.intake]
+verify_jwt = false
+
+# The opposite: this one sends mail on the shop's behalf, and only a signed-in
+# artist may. Leaving verify_jwt on is what makes the JWT check in the function
+# a second line rather than the only one.
+[functions.respond]
+verify_jwt = true

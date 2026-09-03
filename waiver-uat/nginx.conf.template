@@ -1,0 +1,144 @@
+# WayMaker Ink — waiver forms
+#
+# Rendered to /etc/nginx/conf.d/default.conf at container start by
+# docker-entrypoint.sh, which runs envsubst over an explicit variable list.
+#
+# ⚠ This file deliberately does NOT live in /etc/nginx/templates/. The official
+# nginx image ships 20-envsubst-on-templates.sh, which would process anything
+# in that directory first and substitute *every* environment variable — eating
+# nginx's own $uri, $binary_remote_addr and friends. Keeping the template
+# outside that path leaves substitution entirely to our script.
+
+# ---------------------------------------------------------------------------
+# http{} context. conf.d/*.conf is included inside http{}, so these directives
+# belong above the server block, not inside it.
+# ---------------------------------------------------------------------------
+
+# Behind Traefik every request arrives from a container IP on the Docker
+# network. Without this, $binary_remote_addr is Traefik's address, all visitors
+# share a single rate-limit bucket, and the third person to submit a waiver in
+# a minute gets a 429. Trust the private ranges so the real client IP is used.
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 172.16.0.0/12;
+set_real_ip_from 192.168.0.0/16;
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;
+
+# A waiver is a considered, one-per-visit action — 6/min with a burst of 3 is
+# far above real use and far below what makes automated abuse worthwhile.
+limit_req_zone $binary_remote_addr zone=waiver:10m rate=6r/m;
+limit_req_status 429;
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location = /healthz {
+        access_log off;
+        # default_type, not add_header — add_header APPENDS, so setting
+        # Content-Type that way emits two of them (the default
+        # application/octet-stream plus text/plain).
+        default_type text/plain;
+        return 200 'ok';
+    }
+
+    # -----------------------------------------------------------------------
+    # Waiver intake. The entire point of this block: the shared secret is
+    # injected here, server-side, so the browser never holds a credential and
+    # the n8n webhook can run Header Auth against a value no visitor can read.
+    # Because this is same-origin there is no CORS preflight either.
+    # -----------------------------------------------------------------------
+    location = /api/waiver {
+        limit_except POST { deny all; }
+        limit_req zone=waiver burst=3 nodelay;
+
+        # A signature PNG plus one 1400px/0.85 JPEG as base64 lands around
+        # 1-1.5 MB. 4m is headroom, not a target. Oversized bodies are refused
+        # here rather than costing an n8n execution.
+        client_max_body_size 4m;
+
+        proxy_pass ${WM_WAIVER_WEBHOOK_URL};
+
+        # The secret. Set from the environment; never committed, never served.
+        proxy_set_header X-WM-Form-Key "${WM_FORM_KEY}";
+
+        # Traefik terminates TLS in front of n8n and routes on SNI, so the
+        # upstream handshake must carry it. $proxy_host is nginx's default for
+        # Host and resolves to the proxy_pass hostname — set explicitly here
+        # because getting it wrong yields a confusing 404 from Traefik.
+        proxy_ssl_server_name on;
+        proxy_set_header Host $proxy_host;
+
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Waiver payloads carry base64 images and the workflow renders a PDF;
+        # the default 60s read timeout is the right order of magnitude but
+        # stated explicitly so it is not silently inherited.
+        proxy_read_timeout 60s;
+
+        # An upstream error must not be retried against a *different* upstream
+        # or replayed — a duplicate waiver is a records problem.
+        proxy_next_upstream off;
+    }
+
+    # index.html must never be cached, or a deploy won't reach returning
+    # visitors. Fingerprint-free assets get a short cache instead of a long one.
+    #
+    # ⚠ The hardening headers are repeated in every block below, and that is
+    # deliberate — do not "de-duplicate" them up to the server level. nginx's
+    # add_header inheritance is all-or-nothing: a context that declares any
+    # add_header of its own silently discards every one inherited from its
+    # parent. Because each of these blocks sets Cache-Control, a server-level
+    # copy of the hardening headers would reach no response at all. `always`
+    # does not change this — it only controls error responses.
+    location = /index.html {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # config.js is generated per-environment at container start. Caching it
+    # would serve UAT's Turnstile key to production after a promotion.
+    location = /config.js {
+        add_header Cache-Control "no-store, must-revalidate";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    location ~* \.(css|js)$ {
+        add_header Cache-Control "public, max-age=300";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    location ~* \.(png|jpg|jpeg|svg|ico|webp)$ {
+        add_header Cache-Control "public, max-age=2592000";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+    }
+
+    # Anything not matched above (the try_files fallback path).
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Robots-Tag "${WM_ROBOTS_TAG}" always;
+
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml;
+    gzip_min_length 512;
+}

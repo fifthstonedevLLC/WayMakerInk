@@ -1,0 +1,43 @@
+# ==========================================================================
+# WayMaker Ink — waiver forms
+# ==========================================================================
+
+# --- Secrets -------------------------------------------------------------
+# Real values live in the Dokploy environment panel, never in the repo.
+# .env.example is the committed template — keep it free of real values.
+.env
+.env.*
+!.env.example
+
+# Service-account and OAuth material, if any ever lands here
+*service-account*.json
+*credentials*.json
+*.pem
+*.key
+
+# --- Generated at runtime ------------------------------------------------
+# NOTE: public/config.js is deliberately NOT ignored. It is the committed
+# local-dev fallback carrying Cloudflare's public "always passes" test key;
+# docker-entrypoint.sh overwrites it inside the running container, which never
+# touches the working tree.
+
+# --- OS / editor cruft ----------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Word and Excel leave these behind while a file is open
+~$*
+.~lock.*#
+
+# Claude Code per-machine settings; a shared .claude/settings.json (if one is
+# added) should stay tracked.
+#
+# The leading **/ matters. A pattern containing a slash is anchored to the
+# directory holding this .gitignore, so a bare `.claude/settings.local.json`
+# would match only the one at the root and silently commit every nested copy.
+**/.claude/settings.local.json
