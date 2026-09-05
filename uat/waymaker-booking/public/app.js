@@ -449,11 +449,26 @@
     els.serviceInputs.forEach(function (input) {
       /* The machine key off the data attribute, NOT the label lowercased —
          "Touch Up" would give 'touch up', which matches no artist's services
-         entry and would disable a chip the artist actually offers. */
+         entry and would hide a chip the artist actually offers. */
       var value = input.getAttribute('data-service');
-      /* An unoffered service must not be submittable even from devtools —
-         disabled inputs are not serialised by FormData. */
-      input.disabled = !offers(value);
+      var offered = offers(value);
+
+      /* Removed from the page, not greyed out. The same rule the under-18 ink
+         path follows below: a control you are not allowed to use is worse to
+         read past than one that isn't there. Pair is the deliberate exception
+         — it is disabled rather than hidden because a note points at it and
+         the row would reflow under the thumb every time the picker changes.
+         Neither applies here: `services` is fixed for the whole visit, so
+         there is nothing to reflow, and "Laynie doesn't do touch ups" is not
+         a sentence worth putting on her form.
+
+         The markup carries all three chips because it is static; which of
+         them is real is an artist-by-artist question only this can answer. */
+      if (input.parentNode) input.parentNode.hidden = !offered;
+      /* Belt and braces: also keeps it out of tab order and off the
+         radiogroup as far as assistive tech is concerned. */
+      input.disabled = !offered;
+
       input.addEventListener('change', function () {
         if (input.checked) syncService(value);
       });
@@ -490,10 +505,16 @@
   }
 
   function setService(next) {
+    /* Resolve before painting the chips, not after. syncService() clamps to
+       what the artist offers, so passing it a service they don't would leave
+       every chip unchecked while `service` quietly held something else — the
+       markup hardcodes `checked` on Tattoo, which is the wrong one to fall
+       back to for a piercing-only artist. */
+    var resolved = offers(next) ? next : artist.services[0];
     els.serviceInputs.forEach(function (input) {
-      input.checked = input.getAttribute('data-service') === next;
+      input.checked = input.getAttribute('data-service') === resolved;
     });
-    syncService(next);
+    syncService(resolved);
   }
 
   function isMinor() {
@@ -502,7 +523,14 @@
   }
 
   function syncService(next) {
-    service = ALL_SERVICES.indexOf(next) !== -1 ? next : 'tattoo';
+    /* Clamped to what THIS artist offers, not merely to a service that exists.
+       The hero radios live outside the <form> (see index.html) so they are
+       never serialised — the hidden `service` input written below is the only
+       value the request carries, which makes this the one place an unoffered
+       service can be kept out of it. Falling back to the artist's own default
+       rather than the literal 'tattoo': that assumption breaks on the first
+       piercing-only artist. */
+    service = offers(next) ? next : artist.services[0];
 
     /* The submitted value. Written the way a person writes it because the
        portal shows it to one — the intake function normalises it back to a key

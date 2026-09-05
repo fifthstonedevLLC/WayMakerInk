@@ -57,13 +57,18 @@ disabled in `config.toml`, deliberately: nobody signs themselves up for a portal
 showing every client's phone number and photographs.
 
 Then tell the portal who they are — the trigger creates the `profiles` row but
-cannot know which artist a person is:
+cannot know which artist a person is. Fill in the real emails in
+`supabase/set-profiles.sql` and run it against the project (SQL Editor, or
+`psql`):
 
 ```sql
-update public.profiles set display_name = 'Nic',    role = 'admin', artist_key = 'nic'
-  where id = (select id from auth.users where email = 'nic@…');
-update public.profiles set display_name = 'Laynie', role = 'admin', artist_key = 'laynie'
-  where id = (select id from auth.users where email = 'laynie@…');
+insert into public.profiles (id, display_name, role, artist_key)
+select id, 'Nic', 'admin', 'nic'
+from auth.users where email = 'nic@…'
+on conflict (id) do update
+  set display_name = excluded.display_name,
+      role         = excluded.role,
+      artist_key   = excluded.artist_key;
 ```
 
 `role = 'admin'` means each sees both queues, with the artist filter defaulting

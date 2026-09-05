@@ -295,10 +295,17 @@ button, input, textarea, select { font: inherit; }
 }
 .wm-chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* A chip removed outright — a service this artist doesn't offer. The label has
+   no display of its own today so [hidden] would already work, but `span` next
+   door is inline-flex and this row is one refactor away from inheriting it.
+   See .wm-section[hidden] for the same reasoning. */
+.wm-chip[hidden] { display: none; }
+
 /* A chip whose option isn't available for the current selection — Pair on a
    piercing the menu prices single only. Shown rather than removed so the row
    doesn't reflow under the thumb every time the picker changes, and so the
-   note beneath it has something to point at. */
+   note beneath it has something to point at. Deliberately not how an unoffered
+   *service* is handled: that one is fixed for the visit and has no note. */
 .wm-chip.is-disabled span {
   opacity: 0.4;
   cursor: not-allowed;
