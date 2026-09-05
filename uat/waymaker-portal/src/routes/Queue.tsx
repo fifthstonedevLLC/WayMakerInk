@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { priceLabel, waitingFor } from '../lib/format';
@@ -90,6 +90,49 @@ export default function Queue({ profile }: { profile: Profile }) {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
+  /* Bumped to re-read the queue without changing a filter. Both the tiles and
+     the list depend on it, so they refresh together and cannot disagree about
+     how many NEW requests there are.
+
+     Nothing pushed a new request into an open tab before this: both reads were
+     keyed on the filters alone, so a request that arrived after the page loaded
+     stayed invisible until a manual reload. The artist gets the notification
+     email, switches to the tab that is already open, and sees the count from
+     whenever they last loaded it.
+
+     Refetch on returning to the tab, plus a slow timer for a tab left open on a
+     second monitor. Focus is what actually makes it feel immediate — the email
+     lands, they click over, it is already right.
+
+     ⚠ Realtime would be the direct answer and is deliberately not used. The
+     `requests` table is in no publication and `config.toml` enables nothing, so
+     it would need a migration plus a subscription that silently returns nothing
+     if the publication is missing. For a two-person shop reading a queue in
+     minutes, a poll that cannot fail quietly is the better trade. */
+  const [refresh, setRefresh] = useState(0);
+
+  /* Which filters the currently-rendered list belongs to, so a refresh tick can
+     be told apart from a filter change. A ref rather than state: it is read and
+     written inside the fetch effect and must not itself cause a render. */
+  const filterKey = useRef(`${status}|${service}|${artist}`);
+
+  useEffect(() => {
+    /* Guarded on visibility so a background tab is not polling all day, and so
+       returning to it reads once rather than firing focus and visibilitychange
+       as two separate rounds. */
+    const bump = () => {
+      if (document.visibilityState === 'visible') setRefresh((n) => n + 1);
+    };
+    const timer = window.setInterval(bump, 60_000);
+    document.addEventListener('visibilitychange', bump);
+    window.addEventListener('focus', bump);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', bump);
+      window.removeEventListener('focus', bump);
+    };
+  }, []);
+
   /* Change some filters, keep the rest. */
   function href(next: Record<string, string | null>): string {
     const p = new URLSearchParams(params);
@@ -138,12 +181,20 @@ export default function Queue({ profile }: { profile: Profile }) {
     return () => {
       live = false;
     };
-  }, [artist]);
+  }, [artist, refresh]);
 
   useEffect(() => {
     let live = true;
-    setRows(null);
     setError('');
+
+    /* Blank the list only when the FILTERS changed, never on a background
+       refresh. `setRows(null)` is what renders the loading state, so doing it
+       on every tick would flash the queue empty once a minute and throw away
+       the scroll position under someone reading it. */
+    if (filterKey.current !== `${status}|${service}|${artist}`) {
+      filterKey.current = `${status}|${service}|${artist}`;
+      setRows(null);
+    }
 
     /* RLS already scopes this to what the signed-in person may see. The artist
        filter narrows that further; it cannot widen it. */
@@ -166,7 +217,7 @@ export default function Queue({ profile }: { profile: Profile }) {
     return () => {
       live = false;
     };
-  }, [status, service, artist]);
+  }, [status, service, artist, refresh]);
 
   const visible = useMemo(() => {
     if (!rows) return null;
