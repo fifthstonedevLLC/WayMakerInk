@@ -11,7 +11,12 @@
 #
 # Environment (Dokploy panel; see uat/.env.example for the annotated set):
 #
-#   WM_UAT_LABEL      optional. Text in the corner flag. Default "UAT".
+#   WM_UAT_LABEL      optional. Text in the corner flag. Default "UAT" when
+#                     UNSET. Set it to an empty string — or to "none" for panels
+#                     that cannot express empty — to remove the flag entirely,
+#                     which is what this image needs when it serves production.
+#                     Empty removes the directive; it does not paint a blank
+#                     flag.
 #   WM_ROBOTS_TAG     optional. X-Robots-Tag value. Default "noindex, nofollow".
 #                     There is no reason for UAT to ever set this to anything
 #                     else; it exists so the value is not a literal in the
@@ -48,7 +53,22 @@ fail() {
 # Lands inside a single-quoted nginx string that is itself inside an HTML
 # attribute soup, so a quote, angle bracket or backslash would either break the
 # config or inject markup into every page.
-WM_UAT_LABEL="${WM_UAT_LABEL:-UAT}"
+#
+# `-` and not `:-`, so an explicitly EMPTY value is honoured rather than falling
+# back to "UAT". That distinction is what lets this image serve production: the
+# flag is a sub_filter that fires on every page unconditionally, so an empty
+# label without the removal below renders a blank red box in the corner forever
+# rather than no box.
+#
+# Unset still means "UAT". A UAT deploy that forgets the variable gets flagged,
+# which is the direction this should fail in — an unflagged UAT looks exactly
+# like production, and that is how someone sends a real client a test link.
+#
+# `none` is accepted as an alias because some deployment panels cannot express
+# "set, but empty" and silently drop the variable instead.
+WM_UAT_LABEL="${WM_UAT_LABEL-UAT}"
+[ "$WM_UAT_LABEL" = "none" ] && WM_UAT_LABEL=""
+
 case "$WM_UAT_LABEL" in
   *[\'\"\<\>\\\;]*) fail "WM_UAT_LABEL contains an illegal character (no quotes, angle brackets, backslashes or semicolons)" ;;
 esac
@@ -221,6 +241,22 @@ printf 'User-agent: *\nDisallow: /\n' > "$ROBOTS_TARGET"
 envsubst '${WM_UAT_LABEL} ${WM_ROBOTS_TAG} ${WM_N8N_UPSTREAM} ${WM_N8N_HOST} ${WM_RESOLVER} ${WM_FUNCTIONS_UPSTREAM} ${WM_FUNCTIONS_HOST}' \
   < "$TEMPLATE" > "$NGINX_TARGET"
 
-echo "[wm-uat] config written: label=${WM_UAT_LABEL} robots=${WM_ROBOTS_TAG} auth=${AUTH_STATE}"
+# An empty label means no flag at all, not an empty flag. The sub_filter in the
+# template is unconditional, so the only way to switch it off is to take the
+# directive out of the rendered config — leaving it with an empty label paints a
+# blank red rectangle over the corner of every page.
+#
+# Matched on the id, which appears nowhere else in the template. sub_filter_once
+# is left in place: harmless on its own, and removing a second line is a second
+# thing to get wrong.
+if [ -z "$WM_UAT_LABEL" ]; then
+  sed -i '/id="wm-uat-flag"/d' "$NGINX_TARGET"
+  grep -q 'id="wm-uat-flag"' "$NGINX_TARGET" && fail "could not remove the corner flag from the rendered config"
+  FLAG_STATE="off (production)"
+else
+  FLAG_STATE="$WM_UAT_LABEL"
+fi
+
+echo "[wm-uat] config written: flag=${FLAG_STATE} robots=${WM_ROBOTS_TAG} auth=${AUTH_STATE}"
 echo "[wm-uat] n8n:       ${WM_N8N_UPSTREAM} host=${WM_N8N_HOST} resolver=${WM_RESOLVER}"
 echo "[wm-uat] functions: ${WM_FUNCTIONS_UPSTREAM} host=${WM_FUNCTIONS_HOST}"
