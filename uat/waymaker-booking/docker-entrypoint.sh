@@ -6,7 +6,15 @@
 #   WM_WEBHOOK_URL  production intake webhook. Must be /webhook/, not
 #                   /webhook-test/ — test URLs accept one request and only
 #                   while the n8n editor is open.
-#   WM_ARTISTS      JSON object, artist key -> { enabled, name, headline, blurb }
+#   WM_ARTISTS      JSON object, artist key ->
+#                     { enabled, name, pronoun, services, headline, blurb }
+#                   Every key is optional except enabled; app.js fills the rest
+#                   from its own DEFAULT_ARTISTS for a key it recognises.
+#                     pronoun  "he" | "she" | "they"  — used in the service
+#                              subtitles. Defaults to "they" for an artist this
+#                              file does not already know, which reads correctly
+#                              for anyone rather than guessing from a name.
+#                     services subset of tattoo, piercing, touchup.
 #                   e.g. {"nic":{"enabled":true,"name":"Nic Sinnwell"}}
 #                   Adding an artist is an edit here, not a code change.
 #   WM_HOME_URL     where the confirmation page returns to. Default

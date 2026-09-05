@@ -41,6 +41,7 @@
     nic: {
       enabled: true,
       name: 'Nic Sinnwell',
+      pronoun: 'he',
       services: ['tattoo'],
       headline: 'Tell us about the tattoo you have in mind.',
       blurb: 'Custom tattoo work. Share your idea and Nic will follow up personally with an estimate.'
@@ -48,10 +49,30 @@
     laynie: {
       enabled: false, // set WM_ARTISTS in Dokploy to enable, no code change
       name: 'Laynie Joy',
+      pronoun: 'she',
       services: ['tattoo', 'piercing'],
       headline: 'Tell us about the tattoo you have in mind.',
       blurb: 'Custom tattoo work. Share your idea and Laynie will follow up personally with an estimate.'
     }
+  };
+
+  /* The service subtitles are the only copy that refers to an artist as anything
+     but their name, and they used to say "she'll" outright — written when Laynie
+     was the only artist with more than one service, so the sentence was never
+     shown for anyone else. Nic taking touch-ups made it visible and wrong.
+     Nothing about the code noticed; it is copy, and copy does not fail a build.
+     Hence a real field: a person's pronoun is not something to infer from a name
+     or leave to whoever writes the next sentence.
+
+     ⚠ 'they' is the default, and it is the SAFE one — a new artist added through
+     WM_ARTISTS with no pronoun set reads correctly for anybody rather than
+     guessing at them. normaliseArtists() fills from DEFAULT_ARTISTS for a known
+     key, so the live WM_ARTISTS value in Dokploy — which has no pronoun key —
+     picks these up without being edited. */
+  var PRONOUNS = {
+    he:   { will: 'he\'ll',   subject: 'he',   possessive: 'his' },
+    she:  { will: 'she\'ll',  subject: 'she',  possessive: 'her' },
+    they: { will: 'they\'ll', subject: 'they', possessive: 'their' }
   };
 
   var ALL_SERVICES = ['tattoo', 'piercing', 'touchup'];
@@ -103,6 +124,12 @@
       out[key] = {
         enabled: a.enabled !== undefined ? !!a.enabled : !!base.enabled,
         name: name,
+        /* Unrecognised or absent falls to 'they', never to a guess. Nothing
+           about a name tells you this, and getting it wrong on a page a client
+           reads is worse than the slightly more neutral sentence. */
+        pronoun: PRONOUNS[String(a.pronoun || base.pronoun || '').toLowerCase()]
+          ? String(a.pronoun || base.pronoun).toLowerCase()
+          : 'they',
         services: normaliseServices(a.services || base.services),
         headline: a.headline || base.headline || 'Tell us about the tattoo you have in mind.',
         blurb: a.blurb || base.blurb ||
@@ -561,7 +588,7 @@
     setPanel(els.panels.references, !blockedInk);
     els.actions.hidden = blockedInk;
 
-    /* The door only exists if she actually offers it. */
+    /* The door only exists if this artist actually offers piercing. */
     if (els.minorPiercingLine) els.minorPiercingLine.hidden = !offers('piercing');
     if (els.switchToPiercing) els.switchToPiercing.hidden = !offers('piercing');
 
@@ -623,10 +650,11 @@
     /* The headline never moves for a single-service artist. */
     if (artist.services.length > 1) {
       els.headline.textContent = 'What brings you in?';
+      var they = PRONOUNS[artist.pronoun].will;
       els.subtitle.textContent = piercing
-        ? 'Tell ' + first + ' what you\'d like pierced and she\'ll follow up by email with the price and a link to book.'
+        ? 'Tell ' + first + ' what you\'d like pierced and ' + they + ' follow up by email with the price and a link to book.'
         : touchup
-          ? 'Show ' + first + ' the work that needs freshening up and she\'ll follow up by email with what it takes and a link to book.'
+          ? 'Show ' + first + ' the work that needs freshening up and ' + they + ' follow up by email with what it takes and a link to book.'
           : 'Every piece starts with a conversation. Share your idea below and ' + first +
             ' will review it personally, then follow up by email with a time estimate, a price, and a link to book.';
     }
