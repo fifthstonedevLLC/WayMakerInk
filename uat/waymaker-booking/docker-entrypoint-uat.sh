@@ -222,7 +222,17 @@ else
   } > "$AUTH_TARGET"
 
   AUTH_STATE="off"
-  echo "[wm-uat] WARNING: WM_UAT_PASSWORD is not set — the UAT form is reachable by anyone with the URL" >&2
+
+  # Only a warning where it is actually wrong. A production booking form is
+  # MEANT to be open — clients have no login — so warning there would fire on
+  # every start, be correct never, and teach whoever reads these logs to skip
+  # the line. The corner flag is the tell: if this deploy is labelled, it is not
+  # production, and an unauthenticated copy of it is worth shouting about.
+  if [ -n "$WM_UAT_LABEL" ]; then
+    echo "[wm-uat] WARNING: WM_UAT_PASSWORD is not set — this ${WM_UAT_LABEL} form is reachable by anyone with the URL" >&2
+  else
+    echo "[wm-uat] basic auth off — public form, as production expects"
+  fi
 fi
 
 # --- robots.txt ---------------------------------------------------------------

@@ -255,6 +255,31 @@ Step 7 is the whole of RLS in one command. Step 5 is the whole system.
 - **Basic auth** is a shared doormat over the top of the real Supabase login.
   Keep it on an unlisted UAT host; drop it in production, where the portal's own
   login is the gate.
+
+  ### Turning both off — the exact values
+
+  | App | Variable | UAT | Production |
+  |---|---|---|---|
+  | portal | `WM_ENV_LABEL` | `UAT` | **unset** |
+  | portal | `WM_UAT_PASSWORD` | set | **unset** |
+  | booking | `WM_UAT_LABEL` | `UAT` | **`none`**, or empty |
+  | booking | `WM_UAT_PASSWORD` | set | **unset** |
+
+  ⚠ **`WM_UAT_LABEL` is the one that does not behave like the others.** Unset
+  means `UAT`, not "no flag" — a UAT deploy that forgets the variable stays
+  flagged, which is the direction it should fail in, since an unflagged UAT is
+  indistinguishable from production and that is how a client gets sent a test
+  link. To remove the flag you have to say so: `none`, or an explicitly empty
+  value. The entrypoint then deletes the `sub_filter` from the rendered nginx
+  config, because the directive is unconditional and an empty label would
+  otherwise paint a blank red box on every page.
+
+  `WM_UAT_USER` is irrelevant once the password is unset; leaving it set does
+  nothing.
+
+  Neither is compiled in. `index.html`, `app.js` and `styles.css` contain no UAT
+  markers at all — the flag is injected by nginx and the login is an nginx
+  `auth_basic`, so both are a container restart, not a rebuild.
 - **`WM_REDIRECT_SECONDS=0`** keeps the confirmation on screen. Production wants
   `20`.
 - **The `-uat` webhook path.** One n8n instance serves both environments and the
