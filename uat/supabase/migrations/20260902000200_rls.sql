@@ -109,9 +109,19 @@ create policy "update own display name" on public.profiles
 
 -- --------------------------------------------------------------- requests ---
 -- Read only, and scoped. No insert policy: intake is a function.
--- No update policy: respond is a function. No delete policy at all — a client
--- request is a business record, and "I meant to click the other one" is what
--- the audit table is for.
+-- No update policy: respond is a function. No delete policy either — and that
+-- is still true, but it no longer means requests cannot be deleted.
+--
+-- ⚠ The `delete-request` function removes them, as service_role, after
+-- checking the caller can see the row through THIS policy. Deleting stayed off
+-- RLS on purpose: a delete policy would make `.delete()` available to every
+-- query the portal can build, and the browser holds an anon key. Routing it
+-- through a function keeps the one irreversible operation in the system behind
+-- something that can be read, reasoned about, and revoked in one place.
+--
+-- What the original note said still holds as a warning rather than as a
+-- guarantee: a client request is a business record, the delete cascades the
+-- audit trail away with it, and there is nothing to restore from.
 create policy "staff read requests" on public.requests
   for select to authenticated using (public.can_see_artist(artist_key));
 

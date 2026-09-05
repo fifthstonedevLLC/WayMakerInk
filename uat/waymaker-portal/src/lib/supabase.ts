@@ -82,6 +82,36 @@ export async function respond(payload: {
   return { ok: true };
 }
 
+/* Destroys a request permanently — row, images, audit trail and files.
+   A function rather than a `.delete()` for the same reason respond is one: the
+   browser holds an anon key, so a delete POLICY would put this within reach of
+   anyone who reads the bundle. See supabase/functions/delete-request.
+
+   ⚠ There is no undo, here or anywhere downstream. Every caller must confirm
+   first, and the confirmation has to say so in those words. */
+export async function deleteRequest(rid: string): Promise<{ ok: boolean; error?: string }> {
+  const { data, error } = await supabase.functions.invoke('delete-request', {
+    body: { rid }
+  });
+
+  if (error) {
+    let message = error.message;
+    const res = (error as { context?: Response }).context;
+    if (res && typeof res.json === 'function') {
+      try {
+        const body = await res.clone().json();
+        if (body?.error) message = body.error;
+      } catch {
+        /* Not JSON. The generic message is what there is. */
+      }
+    }
+    return { ok: false, error: message };
+  }
+
+  if (data && data.ok === false) return { ok: false, error: data.error };
+  return { ok: true };
+}
+
 /* The reference bucket is private, so every image needs a token. One hour is
    long enough to read a request and short enough that a URL pasted into a
    group chat stops working. */

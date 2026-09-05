@@ -94,7 +94,7 @@ reply goes to a developer.
 ```sh
 cp supabase/.env.example supabase/.env      # fill it in; .env is gitignored
 npx supabase secrets set --env-file supabase/.env
-npx supabase functions deploy intake respond
+npx supabase functions deploy intake respond delete-request
 ```
 
 | Variable | Value |

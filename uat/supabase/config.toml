@@ -85,3 +85,11 @@ verify_jwt = false
 # a second line rather than the only one.
 [functions.respond]
 verify_jwt = true
+
+# ⚠ The only irreversible operation in the system: it destroys the request, its
+# images, its audit trail and its files. verify_jwt stays ON — the gateway turns
+# away anything without a valid token before a line of this function runs, and
+# the function then re-checks the caller and reads the row through THEIR RLS so
+# an artist cannot delete the other's requests.
+[functions.delete-request]
+verify_jwt = true

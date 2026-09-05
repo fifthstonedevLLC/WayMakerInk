@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { deleteRequest, supabase } from '../lib/supabase';
 import { priceLabel, waitingFor } from '../lib/format';
 import {
   SERVICE_LABEL,
@@ -85,10 +85,22 @@ export default function Queue({ profile }: { profile: Profile }) {
   }, [profile.role, params, setParams]);
 
   const [rows, setRows] = useState<QueueRow[] | null>(null);
-  const [counts, setCounts] = useState<Record<Service, number> | null>(null);
+  /* Every request's status and service for the chosen artist — two short
+     columns, read once and tallied twice: the tiles want NEW grouped by
+     service, the tabs want everything grouped by status. Two reads would be two
+     snapshots, and the tiles and tabs would sometimes disagree by one. */
+  const [tally, setTally] = useState<Array<{ status: Status; service: Service }> | null>(null);
   const [artists, setArtists] = useState<ArtistOption[]>([]);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+
+  /* Which row is asking to be confirmed, which is mid-flight, and what went
+     wrong. One at a time on purpose: `confirmId` holding a single id means
+     opening a second confirmation closes the first, so there is never more than
+     one armed delete on screen. */
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState('');
 
   /* Bumped to re-read the queue without changing a filter. Both the tiles and
      the list depend on it, so they refresh together and cannot disagree about
@@ -133,6 +145,27 @@ export default function Queue({ profile }: { profile: Profile }) {
     };
   }, []);
 
+  async function onDelete(r: QueueRow) {
+    setDeleting(r.id);
+    setDeleteError('');
+
+    const res = await deleteRequest(r.rid);
+
+    setDeleting(null);
+    if (!res.ok) {
+      /* Keep the confirmation open. Closing it on failure would look like the
+         delete worked until the row reappeared on the next refresh. */
+      setDeleteError(res.error ?? 'Could not delete that request.');
+      return;
+    }
+
+    setConfirmId(null);
+    /* Refetch rather than splice the row out locally: the tiles and the tab
+       counts are derived from a separate read, and dropping the row without
+       re-reading them would leave the numbers one too high. */
+    setRefresh((n) => n + 1);
+  }
+
   /* Change some filters, keep the rest. */
   function href(next: Record<string, string | null>): string {
     const p = new URLSearchParams(params);
@@ -168,20 +201,44 @@ export default function Queue({ profile }: { profile: Profile }) {
      tiles and the list on the same snapshot. */
   useEffect(() => {
     let live = true;
-    let q = supabase.from('request_queue').select('service').eq('status', 'NEW');
+    /* No status filter: the tabs need the counts for statuses you are not
+       currently looking at, which is the whole point of putting numbers on
+       them. Scoped by artist only — the service filter is applied below in JS,
+       so switching service re-labels the tabs without another round trip. */
+    let q = supabase.from('request_queue').select('status, service');
     if (artist !== 'all') q = q.eq('artist_key', artist);
 
-    q.returns<Array<{ service: Service }>>().then(({ data }) => {
+    q.returns<Array<{ status: Status; service: Service }>>().then(({ data }) => {
       if (!live) return;
-      const tally: Record<Service, number> = { tattoo: 0, piercing: 0, touchup: 0 };
-      for (const r of data ?? []) tally[r.service] += 1;
-      setCounts(tally);
+      setTally(data ?? []);
     });
 
     return () => {
       live = false;
     };
   }, [artist, refresh]);
+
+  /* Waiting-on-us, by service. NEW only and never narrowed by the status tab —
+     they must not move when a tile is selected, or the number you are reaching
+     for changes as you click it. */
+  const counts = useMemo(() => {
+    if (!tally) return null;
+    const t: Record<Service, number> = { tattoo: 0, piercing: 0, touchup: 0 };
+    for (const r of tally) if (r.status === 'NEW') t[r.service] += 1;
+    return t;
+  }, [tally]);
+
+  /* Per status, and DOES follow the service filter — the tabs sit below the
+     tiles and read as narrowing what the tiles selected, so a Piercing tile
+     with "Link sent" beside it should mean piercings that were answered, not
+     every answered request in the shop. */
+  const statusCounts = useMemo(() => {
+    if (!tally) return null;
+    const scoped = service === 'all' ? tally : tally.filter((r) => r.service === service);
+    const t: Record<string, number> = { ALL: scoped.length };
+    for (const r of scoped) t[r.status] = (t[r.status] ?? 0) + 1;
+    return t;
+  }, [tally, service]);
 
   useEffect(() => {
     let live = true;
@@ -298,17 +355,35 @@ export default function Queue({ profile }: { profile: Profile }) {
         })}
       </div>
 
+      {/* The counts follow the service filter above, so these read as "of the
+          piercings, 3 are waiting". A tab at zero is dimmed rather than hidden:
+          removing it would make the row of tabs move under the pointer, and
+          "Declined: 0" is a useful answer to "did I decline that one". */}
       <nav className="wm-tabs" aria-label="Status">
-        {STATUS_TABS.map((tab) => (
-          <Link
-            key={tab.key}
-            to={href({ status: tab.key })}
-            className={status === tab.key ? 'is-on' : ''}
-            aria-current={status === tab.key ? 'page' : undefined}
-          >
-            {tab.label}
-          </Link>
-        ))}
+        {STATUS_TABS.map((tab) => {
+          const n = statusCounts?.[tab.key];
+          return (
+            <Link
+              key={tab.key}
+              to={href({ status: tab.key })}
+              className={`${status === tab.key ? 'is-on' : ''}${n === 0 ? ' is-empty' : ''}`}
+              aria-current={status === tab.key ? 'page' : undefined}
+            >
+              {tab.label}
+              {/* aria-hidden and a spelled-out label: a screen reader reading
+                  "Link sent 7" runs the count into the name as though it were
+                  part of it. */}
+              {n !== undefined && (
+                <>
+                  <span className="wm-tab-n" aria-hidden="true">{n}</span>
+                  <span className="wm-sr-only">
+                    {n} {n === 1 ? 'request' : 'requests'}
+                  </span>
+                </>
+              )}
+            </Link>
+          );
+        })}
         {service !== 'all' && (
           <Link to={href({ service: null })} className="wm-clear">
             {SERVICE_LABEL[service as Service]} ×
@@ -326,7 +401,7 @@ export default function Queue({ profile }: { profile: Profile }) {
 
       <ul className="wm-queue">
         {visible?.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="wm-queue-item">
             <Link to={`/r/${r.rid}`} className={`wm-row wm-row-${r.service}`}>
               <div className="wm-row-main">
                 <div className="wm-row-top">
@@ -363,6 +438,81 @@ export default function Queue({ profile }: { profile: Profile }) {
                 <span className="wm-row-age">{waitingFor(r.submitted_at)}</span>
               </div>
             </Link>
+
+            {/* Outside the <Link>, not inside it: a button nested in an anchor
+                is invalid, and every click would navigate before it deleted
+                anything. */}
+            <button
+              type="button"
+              className="wm-row-delete"
+              onClick={() => {
+                setConfirmId(r.id);
+                setDeleteError('');
+              }}
+              aria-label={`Delete the request from ${r.first_name} ${r.last_name}`}
+            >
+              Delete
+            </button>
+
+            {/* alertdialog rather than dialog: this interrupts to warn, and the
+                distinction is what makes a screen reader announce the whole
+                thing on open instead of just the focused button. */}
+            {confirmId === r.id && (
+              <div
+                className="wm-confirm"
+                role="alertdialog"
+                aria-labelledby={`wm-del-h-${r.id}`}
+                aria-describedby={`wm-del-b-${r.id}`}
+              >
+                <h3 id={`wm-del-h-${r.id}`}>Delete this request permanently?</h3>
+
+                <div id={`wm-del-b-${r.id}`}>
+                  {/* Names what actually goes, rather than "are you sure". The
+                      photographs are the part people do not expect, because
+                      they live in storage rather than in the row. */}
+                  <p>
+                    <strong>This cannot be undone.</strong> {r.first_name} {r.last_name}'s
+                    request, their contact details, everything they wrote
+                    {r.image_count > 0 &&
+                      `, their ${r.image_count} reference photo${r.image_count === 1 ? '' : 's'}`}
+                    {' '}and the record of what was sent to them are all destroyed. There is no
+                    archive and nothing to restore from.
+                  </p>
+
+                  {/* Deleting the row does not reach into Acuity. Somebody who
+                      already has a booking link keeps it, and the request that
+                      explained who they are will be gone. */}
+                  {r.status === 'LINK_SENT' && (
+                    <p className="wm-confirm-note">
+                      A booking link was already sent to this client. Deleting the request does
+                      not cancel it — they can still book, and you will have nothing here saying
+                      who they are or what they asked for.
+                    </p>
+                  )}
+                </div>
+
+                {deleteError && <p className="wm-error" role="alert">{deleteError}</p>}
+
+                <div className="wm-confirm-actions">
+                  <button
+                    type="button"
+                    className="wm-btn-quiet"
+                    onClick={() => setConfirmId(null)}
+                    disabled={deleting === r.id}
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    type="button"
+                    className="wm-btn-danger"
+                    onClick={() => void onDelete(r)}
+                    disabled={deleting === r.id}
+                  >
+                    {deleting === r.id ? 'Deleting…' : 'Delete permanently'}
+                  </button>
+                </div>
+              </div>
+            )}
           </li>
         ))}
       </ul>
