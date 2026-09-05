@@ -4,8 +4,8 @@ Two apps, one Supabase project, two domains.
 
 | | Domain | Build context |
 |---|---|---|
-| Booking form | `uat-booking.waymakerink.com` | `uat/waymaker-booking` |
-| Admin portal | `uat-portal.waymakerink.com` | `uat/waymaker-portal` |
+| Booking form | `booking.waymakerink.com` | `uat/waymaker-booking` |
+| Admin portal | `portal.waymakerink.com` | `uat/waymaker-portal` |
 
 Do these in order. Steps 1–3 are Supabase and can be done before Dokploy exists;
 the apps are useless without them.
@@ -99,8 +99,8 @@ npx supabase functions deploy intake respond delete-request
 
 | Variable | Value |
 |---|---|
-| `WM_PORTAL_URL` | `https://uat-portal.waymakerink.com` |
-| `WM_ALLOWED_ORIGINS` | `https://uat-portal.waymakerink.com` |
+| `WM_PORTAL_URL` | `https://portal.waymakerink.com` |
+| `WM_ALLOWED_ORIGINS` | `https://portal.waymakerink.com` |
 | `WM_N8N_RESPOND_URL` | `https://n8n.fifthstonedev.com/webhook/wm-respond-uat` |
 | `WM_N8N_SIGNING_SECRET` | `openssl rand -base64 32` — the **same** value on the n8n container |
 | `WM_N8N_NOTIFY_URL` | `https://n8n.fifthstonedev.com/webhook/booking-request-uat` |
@@ -157,27 +157,27 @@ update public.service_tiers set acuity_url = 'https://waymakerink.as.me/?appoint
 Same repository and branch for both; only the build path and the environment
 differ.
 
-### App: `uat-booking`
+### App: `booking`
 
 | | |
 |---|---|
 | Build context | `uat/waymaker-booking` |
 | Dockerfile | `Dockerfile` |
 | Port | `80` |
-| Domain | `uat-booking.waymakerink.com` |
+| Domain | `booking.waymakerink.com` |
 | Environment | [`waymaker-booking/.env.example`](waymaker-booking/.env.example) |
 
 The values that must be real: `WM_FUNCTIONS_UPSTREAM` (the project origin, no
 path, no trailing slash) and `WM_UAT_PASSWORD`.
 
-### App: `uat-portal`
+### App: `portal`
 
 | | |
 |---|---|
 | Build context | `uat/waymaker-portal` |
 | Dockerfile | `Dockerfile` |
 | Port | `80` |
-| Domain | `uat-portal.waymakerink.com` |
+| Domain | `portal.waymakerink.com` |
 | Environment | [`waymaker-portal/.env.example`](waymaker-portal/.env.example) |
 
 The values that must be real: `WM_SUPABASE_URL`, `WM_SUPABASE_ANON_KEY` (the
@@ -194,8 +194,8 @@ browser.
 Two records at the Dokploy host's address, then let Dokploy issue certificates:
 
 ```
-uat-booking.waymakerink.com   A/CNAME  ->  <dokploy host>
-uat-portal.waymakerink.com    A/CNAME  ->  <dokploy host>
+booking.waymakerink.com   A/CNAME  ->  <dokploy host>
+portal.waymakerink.com    A/CNAME  ->  <dokploy host>
 ```
 
 ### Both apps fail closed
@@ -236,9 +236,9 @@ Each step is the first thing that breaks if the one before it is wrong.
 
 | # | Do | Expect |
 |---|---|---|
-| 1 | `https://uat-booking.waymakerink.com/laynie` | The form, behind the basic-auth prompt, red UAT flag top right |
+| 1 | `https://booking.waymakerink.com/laynie` | The form, behind the basic-auth prompt, red UAT flag top right |
 | 2 | Submit a piercing with two photos | `200`, confirmation screen |
-| 3 | Sign in at `https://uat-portal.waymakerink.com` | Lands on your own queue; the request is in the piercing tile |
+| 3 | Sign in at `https://portal.waymakerink.com` | Lands on your own queue; the request is in the piercing tile |
 | 4 | Open it | Both photos render inline |
 | 5 | Pick the tier, **Send Response** | Client email arrives; request goes `LINK_SENT` |
 | 6 | **Resend booking link** on that request | Second email; request unchanged; `resent` in History |
