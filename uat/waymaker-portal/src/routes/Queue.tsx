@@ -102,6 +102,29 @@ export default function Queue({ profile }: { profile: Profile }) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState('');
 
+  /* Focus lands on Keep it when a confirmation opens. Two reasons, and the
+     second is the one that matters: `role="alertdialog"` promises a screen
+     reader that focus is inside the dialog, and leaving it on the Delete
+     button behind would make that a lie. It also puts the SAFE choice under
+     the return key of anyone driving this from the keyboard. */
+  const keepItRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (confirmId) keepItRef.current?.focus();
+  }, [confirmId]);
+
+  /* Escape closes it, as any dialog should — and never while the delete is
+     in flight, where dismissing the only progress indicator would leave
+     somebody unsure whether it happened. */
+  useEffect(() => {
+    if (!confirmId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !deleting) setConfirmId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [confirmId, deleting]);
+
   /* Bumped to re-read the queue without changing a filter. Both the tiles and
      the list depend on it, so they refresh together and cannot disagree about
      how many NEW requests there are.
@@ -495,6 +518,7 @@ export default function Queue({ profile }: { profile: Profile }) {
 
                 <div className="wm-confirm-actions">
                   <button
+                    ref={keepItRef}
                     type="button"
                     className="wm-btn-quiet"
                     onClick={() => setConfirmId(null)}

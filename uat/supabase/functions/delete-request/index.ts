@@ -9,6 +9,11 @@
    recoverable afterwards by any means the portal has — the only route back is
    a database restore, which takes the entire project back with it.
 
+   What survives is a row in `request_tombstones`: rid, artist, service, status
+   and who deleted it, with NO client data at all. Enough to answer "was there
+   a request and who removed it", not enough to reconstruct a word of it. The
+   deletion is real; only the fact of it is kept.
+
    ---------------------------------------------------- why this is a function
    The schema shipped with NO delete policy on `public.requests`, and said why:
    "a client request is a business record, and 'I meant to click the other one'
@@ -69,44 +74,80 @@ Deno.serve(async (req) => {
 
     const db = adminClient();
 
+    /* The rid as the DATABASE spells it, not as the caller typed it. They are
+       equal — the row was found by matching on it — but the storage path is
+       built from this, and building a path out of unvalidated request body is
+       the habit worth not having. */
+    const safeRid = request.rid;
+
     /* ---------------------------------------------------------- the photos ---
        Listed rather than assumed: intake names them `<rid>/reference-N.<ext>`
-       and the extension follows the upload's content type, so guessing the
+       with the extension following the upload's content type, so guessing the
        filenames would silently miss every PNG and HEIC.
 
-       A failure to remove them is logged and does NOT stop the delete. The
-       request row is what the artist asked to be rid of; orphaned files are
-       untidy, and refusing the whole operation over them would leave a request
-       they have already been told is going. */
-    const { data: files, error: listErr } = await db.storage.from(BUCKET).list(rid);
+       Removed BEFORE the row. request_images cascades away with the request,
+       so deleting the row first would leave files in the bucket with nothing
+       pointing at them — unreachable from the portal, unlistable, and still
+       counting against storage. Failing with the row still present is the
+       recoverable order.
+
+       A failure here is logged and does NOT stop the delete: the request is
+       what the artist asked to be rid of, and refusing over a leftover file
+       would leave them looking at a request they were told was going.
+
+       The default page size is 100 and intake caps a request at 5 images, so
+       one call sees all of them. */
+    const { data: files, error: listErr } = await db.storage.from(BUCKET).list(safeRid);
 
     if (listErr) {
-      console.error(`delete ${rid}: could not list storage:`, listErr.message);
+      console.error(`delete ${safeRid}: could not list storage:`, listErr.message);
     } else if (files?.length) {
-      const paths = files.map((f) => `${rid}/${f.name}`);
+      const paths = files.map((f) => `${safeRid}/${f.name}`);
       const { error: rmErr } = await db.storage.from(BUCKET).remove(paths);
-      if (rmErr) console.error(`delete ${rid}: could not remove files:`, rmErr.message);
+      if (rmErr) console.error(`delete ${safeRid}: could not remove files:`, rmErr.message);
     }
 
     /* ------------------------------------------------------------ the row ---
-       Cascades to request_images and request_events. There is no soft-delete
-       column to set instead: the schema has none, and adding one silently here
-       would leave the portal showing "deleted" to an artist while the client's
-       name, email and photographs were all still in the table. If the answer
-       ever becomes "archive, don't destroy", that is a migration and a filter,
-       not a quiet reinterpretation of this endpoint. */
-    const { error: delErr } = await db.from('requests').delete().eq('id', request.id);
+       One RPC, not a delete: it writes the tombstone and removes the request
+       inside a single transaction, with the row locked `for update` in
+       between. supabase-js cannot open a transaction, so doing this as two
+       calls from here would have two ways to come apart — a tombstone marking
+       a row that still exists, or a destroyed request with nothing recording
+       it. See 20260905000100_request_tombstones.sql.
+
+       There is no soft-delete column to set instead. The schema has none, and
+       inventing one here would leave the portal showing "deleted" to an artist
+       while the client's name, email and photographs were all still in the
+       table. If the answer ever becomes "archive, don't destroy", that is a
+       migration and a filter — not a quiet reinterpretation of this endpoint. */
+    const { data: removed, error: delErr } = await db.rpc('delete_request_permanently', {
+      p_rid: safeRid,
+      p_actor: auth.user.id,
+      p_actor_email: auth.user.email ?? ''
+    });
+
     if (delErr) throw delErr;
 
-    /* Logged because nothing else records it. The audit rows went with the
-       request, so this line is the only trace that it ever existed — worth
-       having when someone asks where a request went. */
+    /* False means the row was gone between the read above and the lock inside
+       the function — the other artist deleted it, or a second tab did. Report
+       it as success: the caller wanted it gone and it is gone, and an error
+       here would send them back to a row that no longer exists. */
+    if (removed === false) {
+      console.log(`delete ${safeRid}: already gone by the time the lock was taken`);
+      return json(req, { ok: true, rid: safeRid, alreadyGone: true });
+    }
+
+    /* The tombstone carries no client data on purpose, so the name lives here
+       and nowhere else. Function logs age out; that is the trade — the durable
+       record is the tombstone, and this is for the week afterwards when
+       somebody asks which request went. */
     console.log(
-      `deleted rid=${rid} artist=${request.artist_key} status=${request.status} ` +
-      `client="${request.first_name} ${request.last_name}" by=${auth.user.id} (${auth.user.email})`
+      `deleted rid=${safeRid} artist=${request.artist_key} status=${request.status} ` +
+      `client="${request.first_name} ${request.last_name}" ` +
+      `by=${auth.user.id} (${auth.user.email ?? 'no email'})`
     );
 
-    return json(req, { ok: true, rid });
+    return json(req, { ok: true, rid: safeRid });
   } catch (err) {
     return fail(req, err);
   }
