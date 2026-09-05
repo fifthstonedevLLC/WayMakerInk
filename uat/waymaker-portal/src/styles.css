@@ -769,46 +769,27 @@ legend {
 
 /* ----------------------------------------------------- delete a request --- */
 
-/* The row is a link and the delete control is a button, so they are siblings
-   rather than nested — a button inside an anchor is invalid, and every click
-   would navigate before it did anything else.
-   `flex-wrap` with a 100% basis on the confirmation is what lets it drop onto
-   its own full-width line underneath both. */
-.wm-queue-item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 8px;
+/* Lives on the request page, at the foot of the second column — never in the
+   queue list. A destructive control on every row of a list someone scans
+   quickly is one mis-aimed click from a request nobody can get back. */
+.wm-card.wm-danger {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
 }
 
-.wm-queue-item > .wm-row { flex: 1 1 auto; min-width: 0; }
+.wm-card.wm-danger h2 { color: var(--danger); }
 
-/* Quiet until you reach for it, but never hidden: a control that appears on
-   hover is unreachable by keyboard and invisible on a touch screen. */
-.wm-row-delete {
-  flex: 0 0 auto;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+.wm-danger-lead {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--muted);
-  font-family: var(--sans);
-  font-size: 13px;
-  padding: 0 14px;
-  cursor: pointer;
 }
 
-.wm-row-delete:hover,
-.wm-row-delete:focus-visible {
-  color: var(--danger);
-  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
-}
-
-/* Full width, under the row it belongs to, in the danger colour. Deliberately
-   not a modal: it stays attached to the request it will destroy, so there is
-   no chance of reading one row's name and confirming another's. */
+/* Replaces the button in place rather than opening over the page. Deliberately
+   not a modal: the client's name, their description and their photographs stay
+   on screen behind it, so the thing being destroyed is readable while the
+   decision is made. */
 .wm-confirm {
-  flex: 1 0 100%;
   border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
   border-left: 3px solid var(--danger);
   background: color-mix(in srgb, var(--danger) 8%, transparent);

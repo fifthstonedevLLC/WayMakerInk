@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { deleteRequest, supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { priceLabel, waitingFor } from '../lib/format';
 import {
   SERVICE_LABEL,
@@ -94,36 +94,11 @@ export default function Queue({ profile }: { profile: Profile }) {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
-  /* Which row is asking to be confirmed, which is mid-flight, and what went
-     wrong. One at a time on purpose: `confirmId` holding a single id means
-     opening a second confirmation closes the first, so there is never more than
-     one armed delete on screen. */
-  const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState('');
-
-  /* Focus lands on Keep it when a confirmation opens. Two reasons, and the
-     second is the one that matters: `role="alertdialog"` promises a screen
-     reader that focus is inside the dialog, and leaving it on the Delete
-     button behind would make that a lie. It also puts the SAFE choice under
-     the return key of anyone driving this from the keyboard. */
-  const keepItRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    if (confirmId) keepItRef.current?.focus();
-  }, [confirmId]);
-
-  /* Escape closes it, as any dialog should — and never while the delete is
-     in flight, where dismissing the only progress indicator would leave
-     somebody unsure whether it happened. */
-  useEffect(() => {
-    if (!confirmId) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !deleting) setConfirmId(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [confirmId, deleting]);
+  /* Deleting lives on the request page, not here. A destructive control on
+     every row of a list is one mis-aimed click from a request nobody can get
+     back, and the queue is the one screen people move through quickly. It sits
+     behind opening the request, where the name and the description are on
+     screen to be read first. */
 
   /* Bumped to re-read the queue without changing a filter. Both the tiles and
      the list depend on it, so they refresh together and cannot disagree about
@@ -167,27 +142,6 @@ export default function Queue({ profile }: { profile: Profile }) {
       window.removeEventListener('focus', bump);
     };
   }, []);
-
-  async function onDelete(r: QueueRow) {
-    setDeleting(r.id);
-    setDeleteError('');
-
-    const res = await deleteRequest(r.rid);
-
-    setDeleting(null);
-    if (!res.ok) {
-      /* Keep the confirmation open. Closing it on failure would look like the
-         delete worked until the row reappeared on the next refresh. */
-      setDeleteError(res.error ?? 'Could not delete that request.');
-      return;
-    }
-
-    setConfirmId(null);
-    /* Refetch rather than splice the row out locally: the tiles and the tab
-       counts are derived from a separate read, and dropping the row without
-       re-reading them would leave the numbers one too high. */
-    setRefresh((n) => n + 1);
-  }
 
   /* Change some filters, keep the rest. */
   function href(next: Record<string, string | null>): string {
@@ -424,7 +378,7 @@ export default function Queue({ profile }: { profile: Profile }) {
 
       <ul className="wm-queue">
         {visible?.map((r) => (
-          <li key={r.id} className="wm-queue-item">
+          <li key={r.id}>
             <Link to={`/r/${r.rid}`} className={`wm-row wm-row-${r.service}`}>
               <div className="wm-row-main">
                 <div className="wm-row-top">
@@ -461,82 +415,6 @@ export default function Queue({ profile }: { profile: Profile }) {
                 <span className="wm-row-age">{waitingFor(r.submitted_at)}</span>
               </div>
             </Link>
-
-            {/* Outside the <Link>, not inside it: a button nested in an anchor
-                is invalid, and every click would navigate before it deleted
-                anything. */}
-            <button
-              type="button"
-              className="wm-row-delete"
-              onClick={() => {
-                setConfirmId(r.id);
-                setDeleteError('');
-              }}
-              aria-label={`Delete the request from ${r.first_name} ${r.last_name}`}
-            >
-              Delete
-            </button>
-
-            {/* alertdialog rather than dialog: this interrupts to warn, and the
-                distinction is what makes a screen reader announce the whole
-                thing on open instead of just the focused button. */}
-            {confirmId === r.id && (
-              <div
-                className="wm-confirm"
-                role="alertdialog"
-                aria-labelledby={`wm-del-h-${r.id}`}
-                aria-describedby={`wm-del-b-${r.id}`}
-              >
-                <h3 id={`wm-del-h-${r.id}`}>Delete this request permanently?</h3>
-
-                <div id={`wm-del-b-${r.id}`}>
-                  {/* Names what actually goes, rather than "are you sure". The
-                      photographs are the part people do not expect, because
-                      they live in storage rather than in the row. */}
-                  <p>
-                    <strong>This cannot be undone.</strong> {r.first_name} {r.last_name}'s
-                    request, their contact details, everything they wrote
-                    {r.image_count > 0 &&
-                      `, their ${r.image_count} reference photo${r.image_count === 1 ? '' : 's'}`}
-                    {' '}and the record of what was sent to them are all destroyed. There is no
-                    archive and nothing to restore from.
-                  </p>
-
-                  {/* Deleting the row does not reach into Acuity. Somebody who
-                      already has a booking link keeps it, and the request that
-                      explained who they are will be gone. */}
-                  {r.status === 'LINK_SENT' && (
-                    <p className="wm-confirm-note">
-                      A booking link was already sent to this client. Deleting the request does
-                      not cancel it — they can still book, and you will have nothing here saying
-                      who they are or what they asked for.
-                    </p>
-                  )}
-                </div>
-
-                {deleteError && <p className="wm-error" role="alert">{deleteError}</p>}
-
-                <div className="wm-confirm-actions">
-                  <button
-                    ref={keepItRef}
-                    type="button"
-                    className="wm-btn-quiet"
-                    onClick={() => setConfirmId(null)}
-                    disabled={deleting === r.id}
-                  >
-                    Keep it
-                  </button>
-                  <button
-                    type="button"
-                    className="wm-btn-danger"
-                    onClick={() => void onDelete(r)}
-                    disabled={deleting === r.id}
-                  >
-                    {deleting === r.id ? 'Deleting…' : 'Delete permanently'}
-                  </button>
-                </div>
-              </div>
-            )}
           </li>
         ))}
       </ul>

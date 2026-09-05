@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { respond, signedImageUrls, supabase } from '../lib/supabase';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deleteRequest, respond, signedImageUrls, supabase } from '../lib/supabase';
 import { dateTime, money, priceLabel } from '../lib/format';
 import {
   SERVICE_LABEL,
@@ -131,9 +131,138 @@ export default function RequestDetail() {
             </>
           )}
           <History events={events} />
+          {/* Last thing in the column, below the history. Deleting is not part
+              of responding to a request, and putting it near the tier picker
+              would place the irreversible control next to the one people click
+              most. */}
+          <DangerZone req={req} />
         </div>
       </div>
     </article>
+  );
+}
+
+/* ------------------------------------------------------------- deleting --- */
+
+function DangerZone({ req }: { req: RequestRow }) {
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  /* Focus moves to Keep it when the confirmation opens: `role="alertdialog"`
+     tells a screen reader focus is inside the dialog, and leaving it on the
+     button behind would make that untrue. It also puts the SAFE choice under
+     the return key. */
+  const keepItRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (confirming) keepItRef.current?.focus();
+  }, [confirming]);
+
+  /* Escape closes it, as any dialog should — but never mid-delete, where
+     dismissing the only progress indicator leaves someone unsure whether it
+     happened. */
+  useEffect(() => {
+    if (!confirming) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !deleting) setConfirming(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [confirming, deleting]);
+
+  async function onDelete() {
+    setDeleting(true);
+    setError('');
+
+    const res = await deleteRequest(req.rid);
+
+    if (!res.ok) {
+      /* Leave the confirmation open. Closing it on failure would read as
+         success right up until the request was still there on the next load. */
+      setDeleting(false);
+      setError(res.error ?? 'Could not delete that request.');
+      return;
+    }
+
+    /* `replace`, so Back does not return to the page for a request that no
+       longer exists — it would load, fail its read, and report the request as
+       belonging to another artist. */
+    navigate('/', { replace: true });
+  }
+
+  return (
+    <section className="wm-card wm-danger">
+      <h2>Delete this request</h2>
+
+      {!confirming ? (
+        <>
+          <p className="wm-danger-lead">
+            Removes it from the queue for good. There is no archive and no undo.
+          </p>
+          <button type="button" className="wm-btn-danger" onClick={() => setConfirming(true)}>
+            Delete request
+          </button>
+        </>
+      ) : (
+        <div
+          className="wm-confirm"
+          role="alertdialog"
+          aria-labelledby="wm-del-h"
+          aria-describedby="wm-del-b"
+        >
+          <h3 id="wm-del-h">Delete this request permanently?</h3>
+
+          <div id="wm-del-b">
+            {/* Names what actually goes rather than asking "are you sure". The
+                photographs are the part people do not expect, because they
+                live in Storage rather than in the row. */}
+            <p>
+              <strong>This cannot be undone.</strong> {req.first_name} {req.last_name}'s request,
+              their contact details, everything they wrote
+              {req.reference_count > 0 &&
+                `, their ${req.reference_count} reference photo${req.reference_count === 1 ? '' : 's'}`}
+              {' '}and the record of what was sent to them are all destroyed. There is no archive
+              and nothing to restore from.
+            </p>
+
+            {/* Deleting the row does not reach into Acuity. Somebody already
+                holding a booking link keeps it, and the request explaining who
+                they are will be gone. */}
+            {req.status === 'LINK_SENT' && (
+              <p className="wm-confirm-note">
+                A booking link was already sent to this client. Deleting the request does not
+                cancel it — they can still book, and you will have nothing here saying who they
+                are or what they asked for.
+              </p>
+            )}
+          </div>
+
+          {error && <p className="wm-error" role="alert">{error}</p>}
+
+          <div className="wm-confirm-actions">
+            <button
+              ref={keepItRef}
+              type="button"
+              className="wm-btn-quiet"
+              onClick={() => setConfirming(false)}
+              disabled={deleting}
+            >
+              Keep it
+            </button>
+            <button
+              type="button"
+              className="wm-btn-danger"
+              onClick={() => void onDelete()}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : 'Delete permanently'}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
