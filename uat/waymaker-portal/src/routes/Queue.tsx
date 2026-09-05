@@ -43,7 +43,7 @@ export default function Queue({ profile }: { profile: Profile }) {
 
      Search is deliberately NOT in the URL — a history entry per keystroke makes
      the back button useless. */
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const status = (params.get('status') as Status | 'ALL') || 'NEW';
   const service = (params.get('service') as Service | null) || 'all';
 
@@ -56,9 +56,33 @@ export default function Queue({ profile }: { profile: Profile }) {
      button could never win.
 
      `artist_key` is null for an admin who is not themselves an artist; they
-     get Both, which is the right default for a person with no queue. */
-  const artistParam = params.get('artist');
+     get Both, which is the right default for a person with no queue.
+
+     ⚠ Honoured for an ADMIN only. RLS already stops a scoped artist reading
+     anyone else's requests, so `?artist=nic` on Laynie's session was never a
+     leak — it was worse in a quieter way. The param survives a re-login in the
+     same tab, href() copies every existing param into every filter link, and
+     the artist picker that would clear it renders for admins only. So one
+     account signing out and another signing in on the same machine strands the
+     second on a permanently empty queue, with every filter they touch carrying
+     the stale param forward and no control anywhere on the page that changes
+     it. Read as "the migration lost my requests"; actually a query string.
+
+     Clamped rather than trusted: a non-admin's queue is their own, whatever the
+     URL says. */
+  const artistParam = profile.role === 'admin' ? params.get('artist') : null;
   const artist = artistParam ?? profile.artist_key ?? 'all';
+
+  /* And drop it from the URL, so href() stops propagating a filter this account
+     cannot act on and the address bar stops describing a view they are not
+     looking at. `replace` because it is a correction, not a navigation — Back
+     should leave the queue, not step through params being cleaned up. */
+  useEffect(() => {
+    if (profile.role === 'admin' || !params.has('artist')) return;
+    const cleaned = new URLSearchParams(params);
+    cleaned.delete('artist');
+    setParams(cleaned, { replace: true });
+  }, [profile.role, params, setParams]);
 
   const [rows, setRows] = useState<QueueRow[] | null>(null);
   const [counts, setCounts] = useState<Record<Service, number> | null>(null);

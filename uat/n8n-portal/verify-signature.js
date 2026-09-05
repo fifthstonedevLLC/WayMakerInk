@@ -66,7 +66,7 @@ const MAX_SKEW_SECONDS = 300;
    call to be accepted.
 
      wm-respond-uat        ['rid', 'action', 'to', 'bookingUrl']
-     wm-notify-artist-uat  ['rid', 'artistEmail']
+     booking-request-uat   ['rid', 'artistEmail']
 
    Without it, a caller could sign a canon of just `rid` and leave `to`
    unprotected — the signature would verify, and the recipient would be

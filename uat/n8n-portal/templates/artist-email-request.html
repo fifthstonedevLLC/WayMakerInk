@@ -1,0 +1,197 @@
+<!--
+  n8n → "booking-request-uat" → node 3 "Email artist"
+  Email Format: HTML
+
+    To        ={{ $json.artistEmail }}
+    Reply To  ={{ $json.clientEmail }}     ← optional, but it makes Reply reach
+                                             the client without a copy/paste
+    Subject   =New {{ $json.service === 'piercing' ? 'piercing' : $json.service === 'touchup' ? 'touch up' : 'tattoo' }} request — {{ $json.firstName }} {{ $json.lastName }} · {{ $json.rid }}
+
+  The "you have a new request" doorbell, sent by the `intake` function after the
+  row commits. Its whole job is to get the artist into the portal; the request
+  itself is read there.
+
+  ⚠ NO BOOKING LINK, BY DESIGN. There is no Acuity URL anywhere in this file and
+  none should be added. At the moment this email is sent the request has not
+  been priced or claimed — no tier has been chosen, so no appointment type is
+  known, and there is nothing legitimate to link to. The Acuity link is minted
+  later, by the `respond` function, into client-email-booking.html once the
+  artist has actually decided. An Acuity link here would let a client book a
+  session nobody has quoted.
+
+  ⚠ Deliberately thin on detail. It carries the request number, who sent it, and
+  what kind of work it is — enough to decide whether to open it now or after
+  lunch. The idea, placement, size, reference photos and any minor/guardian
+  details are all in the portal, behind a login. Mailing them would put client
+  photographs and phone numbers in an inbox that is not access-controlled and
+  cannot be revoked.
+
+  Values are addressed as $json.X. There is no Commit node in this workflow —
+  the Verify node flattens the webhook body onto $json, so every value is
+  already there. See ../BUILD-RESPONSE.md.
+
+  ⚠ `service` arrives as the machine key: tattoo | piercing | touchup. The
+  ternary below turns it into what a person reads. Keep it in step with
+  SERVICE_SUBMIT in ../../waymaker-booking/public/app.js — 'touchup' has no
+  space and its label does, which is the whole reason a map exists rather than
+  a capitalise.
+
+  ⚠ `portalUrl` is built as `${WM_PORTAL_URL}/r/${rid}` by the intake function.
+  If WM_PORTAL_URL is unset there, that expression yields `/r/WMI-…` — a
+  relative path, which in an email is a dead link rather than an obvious error.
+  Check it is set before trusting a test send.
+
+  Paste the whole file, doctype included — n8n sends the body verbatim, so the
+  <head> is ours. Table layout and inline styles throughout: Gmail strips
+  <style> blocks in some contexts and Outlook ignores most modern CSS. The head
+  is an enhancement layer; the inline styles are the floor.
+
+  This one goes to two people who read it on a phone between clients, so it is
+  built to be understood at a glance and not to be read twice.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>New Request — WayMaker Ink</title>
+<style>
+  :root { color-scheme: dark; supported-color-schemes: dark; }
+
+  body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#080808;
+         -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  img { border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; max-width:100%; }
+
+  [data-ogsc] .wm-bg,   [data-ogsb] .wm-bg   { background-color:#080808 !important; }
+  [data-ogsc] .wm-card, [data-ogsb] .wm-card { background-color:#111111 !important; }
+  [data-ogsc] .wm-text  { color:#f7f7f7 !important; }
+  [data-ogsc] .wm-muted { color:#a8a29a !important; }
+  [data-ogsc] .wm-gold  { color:#f5c684 !important; }
+
+  @media only screen and (max-width:600px) {
+    .wm-pad { padding-left:22px !important; padding-right:22px !important; }
+    .wm-h1  { font-size:23px !important; line-height:1.3 !important; }
+    .wm-rid { font-size:22px !important; letter-spacing:1px !important; }
+    .wm-btn { font-size:18px !important; padding:18px 8px !important; }
+  }
+</style>
+</head>
+<body class="wm-bg" style="margin:0;padding:0;background-color:#080808;">
+
+<!-- Inbox preview line, hidden in the message body. This is the part read on a
+     lock screen, so it carries the two facts that decide whether to open it. -->
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#080808;">
+  {{ $json.firstName }} {{ $json.lastName }} — {{ $json.service === 'piercing' ? 'piercing' : $json.service === 'touchup' ? 'touch up' : 'tattoo' }} request {{ $json.rid }}
+  &#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;&#8199;&#65279;
+</div>
+
+<table role="presentation" class="wm-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#080808" style="background-color:#080808;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:0;">
+
+      <!--[if mso]>
+      <table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td>
+      <![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;margin:0 auto;">
+
+        <!-- Header -->
+        <tr>
+          <td align="center" class="wm-pad" style="padding:36px 28px 30px;">
+            <div class="wm-text" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;letter-spacing:5px;color:#f7f7f7;text-transform:uppercase;">WayMaker Ink</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 8px;">
+            <div class="wm-gold" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#f5c684;">New Request</div>
+          </td>
+        </tr>
+
+        <!-- Client name and service in one sentence rather than two labelled
+             rows: it is the line the artist actually reads, and a sentence
+             survives a narrow phone better than a two-column table. -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 32px;">
+            <div class="wm-h1 wm-text" style="font-family:Georgia,'Times New Roman',serif;font-size:27px;line-height:1.25;color:#f7f7f7;">
+              {{ $json.firstName }} {{ $json.lastName }} sent a {{ $json.service === 'piercing' ? 'piercing' : $json.service === 'touchup' ? 'touch up' : 'tattoo' }} request.
+            </div>
+          </td>
+        </tr>
+
+        <!-- The request number, given the same treatment the client template
+             gives the estimate. It is what everything else in the system is
+             filed under, and the one value worth reading off a screen into a
+             conversation. -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 24px;">
+            <table role="presentation" class="wm-card" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111111" style="background-color:#111111;border:1px solid #4a4a4a;">
+              <tr>
+                <td style="padding:22px 24px;">
+                  <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a8a29a;padding-bottom:10px;">Request Number</div>
+                  <div class="wm-rid wm-gold" style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.3;letter-spacing:2px;color:#f5c684;">{{ $json.rid }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Portal button. The only link in this email. -->
+        <tr>
+          <td class="wm-pad" style="padding:6px 28px 14px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="center" bgcolor="#f5c684" style="background-color:#f5c684;">
+                  <a href="{{ $json.portalUrl }}" class="wm-btn"
+                     style="display:block;padding:18px 8px;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:bold;color:#080808;text-decoration:none;">
+                    Open In The Portal
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 34px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#a8a29a;">
+              Sign in to read the full request, see the reference photos, and send back an estimate.
+            </div>
+          </td>
+        </tr>
+
+        <!-- Says plainly that nothing has been sent yet. Without this line the
+             email reads as though the client has been dealt with, and a request
+             sits unanswered because it looked handled. -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 30px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#a8a29a;padding-top:22px;border-top:1px solid #2a2a2a;">
+              {{ $json.firstName }} has not been quoted yet and has no booking link. Nothing goes to them until you send it from the portal.
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td class="wm-pad" style="padding:0 28px 44px;">
+            <div class="wm-muted" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#a8a29a;padding-top:18px;border-top:1px solid #2a2a2a;">
+              WayMaker Ink &nbsp;·&nbsp; Request {{ $json.rid }}
+              <br />
+              You're receiving this because a request was filed with you.
+            </div>
+          </td>
+        </tr>
+
+      </table>
+      <!--[if mso]>
+      </td></tr></table>
+      <![endif]-->
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>

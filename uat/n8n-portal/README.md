@@ -9,7 +9,7 @@ has the architecture. This file is the two workflows and how they are secured.
 
 | Path | Called by | Sends |
 |---|---|---|
-| `/webhook/wm-notify-artist-uat` | `intake`, after the row commits | "You have a new request" → the artist |
+| `/webhook/booking-request-uat` | `intake`, after the row commits | "You have a new request" → the artist |
 | `/webhook/wm-respond-uat` | `respond`, after the row is claimed | The estimate + booking link, or the decline → the client |
 
 ⚠ Both paths carry the `-uat` suffix. n8n refuses to activate two workflows on
@@ -132,8 +132,14 @@ The shape, for orientation only:
 wm-respond-uat:         Webhook -> Verify -> If isDecline? +- true --> Email - decline
                                                            +- false -> Email - booking
 
-wm-notify-artist-uat:   Webhook -> Verify -> Email artist
+booking-request-uat:    Webhook -> Verify -> Email artist
 ```
+
+| Workflow | Template |
+|---|---|
+| `wm-respond-uat` · booking | [`templates/client-email-booking.html`](templates/client-email-booking.html) |
+| `wm-respond-uat` · decline | [`templates/client-email-decline.html`](templates/client-email-decline.html) |
+| `booking-request-uat` | [`templates/artist-email-request.html`](templates/artist-email-request.html) |
 
 Three settings carry almost all the risk, and all three are covered there:
 

@@ -8,3 +8,20 @@
 
 # Runtime log from `supabase functions serve`, written by nohup.
 fserve.log
+
+# 🔴 Real client data. The Sheet export is 42 records — names, email addresses,
+# phone numbers and free-text descriptions — and import/02-…sql embeds the same
+# payload verbatim as a dollar-quoted literal.
+#
+# Committing either writes 35 people's contact details into git history, where
+# deleting the file does not remove them: every clone keeps the blob, and taking
+# it back needs a history rewrite and a force push.
+#
+# The repo's convention is already this — set-profiles.sql says "do not commit"
+# the real addresses, every .env is ignored, and the public form deliberately
+# carries no artist emails. Client data does not get a weaker rule than that.
+#
+# The GENERATOR is committed. Anyone who needs the SQL re-runs it against their
+# own copy of the export: `node import/build-import-sql.js`.
+migrations/existing_client_data_migration.json
+import/02-import-existing-requests.sql

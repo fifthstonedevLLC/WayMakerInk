@@ -103,11 +103,31 @@ npx supabase functions deploy intake respond
 | `WM_ALLOWED_ORIGINS` | `https://uat-portal.waymakerink.com` |
 | `WM_N8N_RESPOND_URL` | `https://n8n.fifthstonedev.com/webhook/wm-respond-uat` |
 | `WM_N8N_SIGNING_SECRET` | `openssl rand -base64 32` — the **same** value on the n8n container |
-| `WM_N8N_NOTIFY_URL` | optional; leave unset until that workflow exists |
+| `WM_N8N_NOTIFY_URL` | `https://n8n.fifthstonedev.com/webhook/booking-request-uat` |
 
 ⚠ **`/webhook/`, never `/webhook-test/`.** A test URL accepts one request and
 only while the n8n editor is open. The first response works and every one after
 it 404s.
+
+⚠ **An empty `WM_N8N_NOTIFY_URL` is silent.** `notifyArtist()` treats absent as
+"not wired up yet" and returns before sending — by design, so the database half
+can be tested before the mail half exists. The cost is that the artists simply
+stop being told about new requests and nothing anywhere says so: the row lands,
+the client sees their confirmation, and the only trace is the absence of an
+email. If artists report missing notifications, check this variable first.
+
+⚠ **The two workflows need different `REQUIRE_SIGNED` lines.** One copy of
+[`n8n-portal/verify-signature.js`](n8n-portal/verify-signature.js) goes in each,
+and the constant at the top asserts which fields the signature must cover:
+
+| Workflow | `REQUIRE_SIGNED` |
+|---|---|
+| `wm-respond-uat` | `['rid', 'action', 'to', 'bookingUrl']` |
+| `booking-request-uat` | `['rid', 'artistEmail']` |
+
+The file ships with the respond set. Pasting it unchanged into the notify
+workflow throws `Signature does not cover "action"` on every request — the
+signature is fine; the node is asserting a canon that call never had.
 
 ⚠ **The booking domain does not go in `WM_ALLOWED_ORIGINS`.** Its POST goes
 through its own nginx proxy, so the browser sees a same-origin request and sends

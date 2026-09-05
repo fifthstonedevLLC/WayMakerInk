@@ -197,7 +197,7 @@ in front. Neither reads or writes anything.
 
 | Path | Trigger | Sends |
 |---|---|---|
-| `/webhook/wm-notify-artist-uat` | `intake`, after the row commits | "You have a new request" → artist, with a link to `/r/<rid>` |
+| `/webhook/booking-request-uat` | `intake`, after the row commits | "You have a new request" → artist, with a link to `/r/<rid>` |
 | `/webhook/wm-respond-uat` | `respond`, after the row is claimed | The estimate + booking link, or the decline → client |
 
 Each: **Webhook** → **Code** (`verify-signature.js`) → **Send Email**.

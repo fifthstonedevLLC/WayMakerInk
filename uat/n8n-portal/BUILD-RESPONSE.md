@@ -289,7 +289,7 @@ between Supabase and n8n.
 
 ## The other workflow
 
-`wm-notify-artist-uat` — the "you have a new request" mail — is the same shape
+`booking-request-uat` — the "you have a new request" mail — is the same shape
 minus the If and one email node:
 
 ```
@@ -301,11 +301,22 @@ Same Respond mode, same Raw Body OFF, same verify node with
 `artistKey`, `artistName`, `artistEmail`, `firstName`, `lastName`,
 `clientEmail`, `portalUrl`.
 
-It has no template in this repo yet. It needs the client's name, the service,
-and a button to `{{ $json.portalUrl }}` — the request is read in the portal now,
-so the email is a doorbell, not a briefing. Reference images are deliberately
-**not** attached: they are in the portal, and mailing a client's photographs to
-an inbox is a copy nobody can revoke.
+Its template is [`templates/artist-email-request.html`](templates/artist-email-request.html):
+the request number, the client's name, the service, and a button to
+`{{ $json.portalUrl }}`. The request is read in the portal now, so the email is
+a doorbell, not a briefing. Reference images are deliberately **not** attached:
+they are in the portal, and mailing a client's photographs to an inbox is a copy
+nobody can revoke.
+
+⚠ **No Acuity link in it, and none should be added.** When this email is sent
+the request has not been priced or claimed, so no tier — and therefore no
+appointment type — exists yet. The booking link is minted later by `respond`
+into `client-email-booking.html`. One here would let a client book a session
+nobody has quoted.
+
+⚠ `service` arrives as the machine key (`tattoo` / `piercing` / `touchup`), so
+the template carries a ternary to render it. `touchup` has no space and its
+label does — that is why it is a map and not a capitalise.
 
 Its failure is also less costly, which is why `intake` logs a failed notify and
 carries on: the request is already committed and visible in the portal whether
