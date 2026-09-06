@@ -387,7 +387,16 @@ function Images({ urls, count }: { urls: string[]; count: number }) {
 
 /* -------------------------------------------------------------- responding --- */
 
-function defaultMessage(req: RequestRow): string {
+/* A PLACEHOLDER, not a value. This used to prefill the textarea, which meant
+   every reply started by selecting someone else's sentence and deleting it —
+   and the ones that did not get deleted went out as though the artist had
+   written them.
+
+   Keeping the same words as a placeholder keeps what was useful about it. It
+   shows the shape of a good reply and the tone the emails are written in, costs
+   nothing to ignore, and cannot be sent by accident: an untouched box submits
+   empty, and both templates already drop the note block when it is. */
+function messageHint(req: RequestRow): string {
   const first = req.first_name || 'there';
   if (req.service === 'piercing') {
     return `Hi ${first} — thanks for sending this over. Everything looks good on my end, ` +
@@ -412,7 +421,9 @@ function Responder({
 }) {
   const [tierKey, setTierKey] = useState('');
   const [estimate, setEstimate] = useState('');
-  const [message, setMessage] = useState(() => defaultMessage(req));
+  /* Starts empty. Whatever the artist types is the whole message; there is
+     nothing of ours in the box to clear out first. */
+  const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDecline, setConfirmDecline] = useState(false);
@@ -522,14 +533,19 @@ function Responder({
         />
 
         <label className="wm-label" htmlFor="message">
-          Message
+          Message <span className="wm-optional">optional</span>
         </label>
         <textarea
           id="message"
           rows={7}
           value={message}
+          placeholder={messageHint(req)}
           onChange={(e) => setMessage(e.target.value)}
         />
+        <p className="wm-note">
+          Goes to the client above the estimate, in your own words. Leave it blank and the
+          email sends without a note.
+        </p>
 
         {error && <p className="wm-error" role="alert">{error}</p>}
 
@@ -571,8 +587,12 @@ function Responder({
           )}
         </div>
 
+        {/* Worth saying explicitly now the box starts empty: a blank decline is
+            not a blank email. The decline template carries its own standing
+            sentence and adds the note only when there is one. */}
         <p className="wm-note">
-          Declining sends the message above with no price and no booking link.
+          Declining sends the message above with no price and no booking link. Left blank, the
+          client still gets a short note saying the piece isn't one you can take on.
         </p>
       </fieldset>
     </section>

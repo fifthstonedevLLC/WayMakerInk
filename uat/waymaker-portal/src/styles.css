@@ -858,3 +858,14 @@ legend {
 
 .wm-btn-quiet[disabled],
 .wm-btn-danger[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+
+/* "optional" beside a field label. Lower case against the label's uppercase
+   tracking so it reads as an aside rather than as part of the field name. */
+.wm-optional {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 12px;
+  color: #6a6a6a;
+  margin-left: 6px;
+}
