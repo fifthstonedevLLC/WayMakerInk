@@ -10,7 +10,7 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     /* The chunk that matters is supabase-js; splitting it out means a portal
        code change does not re-download it. */
     rollupOptions: {
